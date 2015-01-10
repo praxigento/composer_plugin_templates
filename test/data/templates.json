@@ -1,0 +1,48 @@
+{
+  "vars": {
+    "MYSQL_HOST": "localhost",
+    "MYSQL_USER": "magento_github_user",
+    "MYSQL_PASSWORD": "s8pTo3X5QCsr4SkY48zF",
+    "MYSQL_DBNAME": "magento_github_db"
+  },
+  "templates": [
+    {
+      "src": "tmpl/local.xml",
+      "dst": "mage/app/etc/local.xml",
+      "events": "post-install-cmd",
+      "rewrite": true
+    },
+    {
+      "src": "tmpl/dump.sh.init",
+      "dst": "bin/dump_db/dump.sh",
+      "events": [
+        "post-install-cmd",
+        "post-update-cmd"
+      ]
+    },
+    {
+      "dst": "entry w/o src",
+      "events": [
+        "post-update-cmd"
+      ]
+    },
+    {
+      "src": "entry w/o dst",
+      "events": []
+    },
+    {
+      "src": "entry w/o events",
+      "dst": "desitnation"
+    },
+    {
+      "src": "entry with empty events array",
+      "dst": "destination",
+      "events": []
+    },
+    {
+      "src": "entry with empty event",
+      "dst": "destination",
+      "events": ""
+    }
+  ]
+}

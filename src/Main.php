@@ -19,6 +19,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /**
+ * Main class for the plugin.
+ *
  * User: Alex Gusev <alex@flancer64.com>
  */
 namespace Praxigento\Composer\Plugin\Templates;
@@ -29,13 +31,19 @@ use Composer\IO\IOInterface;
 use Composer\Plugin\PluginInterface;
 use Composer\Script\CommandEvent;
 use Composer\Script\ScriptEvents;
+use Praxigento\Composer\Plugin\Templates\Config;
 
 class Main implements PluginInterface, EventSubscriberInterface {
-
+	/** Entry name for plugin config file in 'extra' section of composer.json */
+	const EXTRA_PARAM = 'praxigento_composer_plugin_mage_config';
 	/** @var Composer */
 	protected $composer;
+	/** @var Config */
+	protected $config;
 	/** @var IOInterface */
 	protected $io;
+	/** @var  string Name of the plugin's configuration file. */
+	private $configFileName;
 
 	/**
 	 * Returns an array of event names this subscriber wants to listen to.
@@ -77,14 +85,37 @@ class Main implements PluginInterface, EventSubscriberInterface {
 		$this->composer = $composer;
 		$this->io       = $io;
 		$extra          = $composer->getPackage()->getExtra();
-		$configFile     = $extra['praxigento_templates_config'];
+		if(isset($extra[ self::EXTRA_PARAM ])) {
+			$this->configFileName = $extra[ self::EXTRA_PARAM ];
+			/* parse configuration */
+			if(file_exists($this->configFileName)) {
+				$this->config = new Config($this->configFileName);
+			} else {
+				$io->write(__CLASS__ . ": Cannot open configuration file (" . $this->configFileName . ").", true);
+			}
+
+		}
 	}
 
-	public function onPostInstallCmd(CommandEvent $event) {
+	/**
+	 * @return mixed
+	 */
+	public
+	function getConfigFileName() {
+		return $this->configFileName;
+	}
+
+	public
+	function onPostInstallCmd(
+		CommandEvent $event
+	) {
 
 	}
 
-	public function onPostUpdateCmd(CommandEvent $event) {
+	public
+	function onPostUpdateCmd(
+		CommandEvent $event
+	) {
 
 	}
 }

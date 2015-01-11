@@ -36,7 +36,7 @@ use Praxigento\Composer\Plugin\Templates\Config;
 class Main implements PluginInterface, EventSubscriberInterface
 {
     /** Entry name for plugin config file in 'extra' section of composer.json */
-    const EXTRA_PARAM = 'praxigento_composer_plugin_mage_config';
+    const EXTRA_PARAM = 'praxigento_templates_config';
     /** @var Composer */
     private $composer;
     /** @var Config */

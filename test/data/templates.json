@@ -7,14 +7,14 @@
   },
   "templates": [
     {
-      "src": "tmpl/local.xml",
-      "dst": "mage/app/etc/local.xml",
+      "src": "test/tmpl/local.xml",
+      "dst": "test/mage/app/etc/local.xml",
       "events": "post-install-cmd",
       "rewrite": true
     },
     {
-      "src": "tmpl/dump.sh.init",
-      "dst": "bin/dump_db/dump.sh",
+      "src": "test/tmpl/dump.sh.init",
+      "dst": "test/bin/dump_db/dump.sh",
       "events": [
         "post-install-cmd",
         "post-update-cmd"

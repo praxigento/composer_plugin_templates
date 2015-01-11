@@ -24,33 +24,66 @@
 
 namespace Praxigento\Composer\Plugin\Templates;
 
+use Composer\Script\ScriptEvents;
 
-class Config_Test extends \PHPUnit_Framework_TestCase {
-	/** @var  string Root directory for the plugin to use test related files and folders. */
-	private static $ROOT_DIR;
+class Config_Test extends \PHPUnit_Framework_TestCase
+{
+    /** @var  string Root directory for the plugin to use test related files and folders. */
+    private static $ROOT_DIR;
 
-	/**
-	 * Traverse up to 'phpunit.xml.dist' and save root folder.
-	 */
-	public static function setUpBeforeClass() {
-		$dir  = './';
-		$file = 'phpunit.xml.dist';
-		for($i = 0; $i < 32; $i++) {
-			if(file_exists($dir . $file)) {
-				break;
-			} else {
-				$dir .= '../';
-			}
-		}
-		self::$ROOT_DIR = $dir;
-	}
+    /**
+     * Traverse up to 'phpunit.xml.dist' and save root folder.
+     */
+    public static function setUpBeforeClass()
+    {
+        $dir = './';
+        $file = 'phpunit.xml.dist';
+        for ($i = 0; $i < 32; $i++) {
+            if (file_exists($dir . $file)) {
+                break;
+            } else {
+                $dir .= '../';
+            }
+        }
+        self::$ROOT_DIR = $dir;
+    }
 
-	public function test_constructor() {
-		$FILE   = self::$ROOT_DIR . Main_Test::FILE_CONFIG_JSON;
-		$config = new Config($FILE);
-		$this->assertTrue(is_array($config->getVars()));
-		$this->assertEquals(4, count($config->getVars()));
-		$this->assertTrue(is_array($config->getTemplates()));
-		$this->assertEquals(2, count($config->getTemplates()));
-	}
+    public function test_getEventsAvailable()
+    {
+        $events = Config::getEventsAvailable();
+        $this->assertTrue(is_array($events));
+    }
+
+    public function test_getTemplatesForEvent()
+    {
+        $FILE = self::$ROOT_DIR . Main_Test::FILE_CONFIG_JSON;
+        $eventName = ScriptEvents::POST_INSTALL_CMD;
+        $config = new Config($FILE);
+        $tmpls = $config->getTemplatesForEvent($eventName);
+        $this->assertTrue(is_array($tmpls));
+        $this->assertEquals(2, count($tmpls));
+    }
+
+    public function test_constructor()
+    {
+        $FILE = self::$ROOT_DIR . Main_Test::FILE_CONFIG_JSON;
+        $config = new Config($FILE);
+        $this->assertTrue(is_array($config->getVars()));
+        $this->assertEquals(4, count($config->getVars()));
+        $tmpls = $config->getTemplates();
+        $this->assertTrue(is_array($tmpls));
+        $this->assertEquals(2, count($tmpls));
+        /** @var $t1 Config\Template */
+        $t1 = $tmpls[0];
+        $this->assertTrue(is_array($t1->getEvents()));
+        $this->assertEquals(1, count($t1->getEvents()));
+        /** @var $t2 Config\Template */
+        $t2 = $tmpls[1];
+        $this->assertTrue(is_array($t2->getEvents()));
+        $this->assertEquals(2, count($t2->getEvents()));
+        /* validate events enabled */
+        $events = $config->getEventsEnabled();
+        $this->assertTrue(is_array($events));
+        $this->assertEquals(2, count($events));
+    }
 }

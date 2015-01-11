@@ -28,89 +28,109 @@ use Composer\Composer;
 use Composer\IO\IOInterface;
 use Composer\Script\ScriptEvents;
 
-class Main_Test extends \PHPUnit_Framework_TestCase {
-	const FILE_CONFIG_JSON = 'test/data/templates.json';
-	/** @var  string Root directory for the plugin to use test related files and folders. */
-	private static $ROOT_DIR;
+class Main_Test extends \PHPUnit_Framework_TestCase
+{
+    const FILE_CONFIG_JSON = 'test/data/templates.json';
+    const FILE_TMPL_SRC = 'test/tmpl/dump.sh.init';
+    const FILE_TMPL_DST = 'test/bin/dump_db/dump.sh';
+    /** @var  string Root directory for the plugin to use test related files and folders. */
+    private static $ROOT_DIR;
 
-	/**
-	 * Traverse up to 'phpunit.xml.dist' and save root folder.
-	 */
-	public static function setUpBeforeClass() {
-		$dir  = './';
-		$file = 'phpunit.xml.dist';
-		for($i = 0; $i < 32; $i++) {
-			if(file_exists($dir . $file)) {
-				break;
-			} else {
-				$dir .= '../';
-			}
-		}
-		self::$ROOT_DIR = $dir;
-	}
+    /**
+     * Traverse up to 'phpunit.xml.dist' and save root folder.
+     */
+    public static function setUpBeforeClass()
+    {
+        $dir = './';
+        $file = 'phpunit.xml.dist';
+        for ($i = 0; $i < 32; $i++) {
+            if (file_exists($dir . $file)) {
+                break;
+            } else {
+                $dir .= '../';
+            }
+        }
+        self::$ROOT_DIR = $dir;
+    }
 
-	public function test_activate_withExtra() {
-		$FILENAME = self::$ROOT_DIR . self::FILE_CONFIG_JSON;
-		/** @var  $package Composer\Package\RootPackageInterface */
-		$package = $this->getMockBuilder('Composer\Package\RootPackageInterface')->getMock();
-		$package->method('getExtra')->willReturn(array( Main::EXTRA_PARAM => $FILENAME ));
-		/** @var  $stub Composer */
-		$composer = $this->getMockBuilder('Composer\Composer')->getMock();
-		$composer->method('getPackage')->willReturn($package);
-		/** @var  $io IOInterface */
-		$io     = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
-		$plugin = new Main();
-		$plugin->activate($composer, $io);
-		$this->assertEquals($FILENAME, $plugin->getConfigFileName());
-	}
+    public function test_activate_withExtra()
+    {
+        $FILENAME = self::$ROOT_DIR . self::FILE_CONFIG_JSON;
+        /** @var  $package Composer\Package\RootPackageInterface */
+        $package = $this->getMockBuilder('Composer\Package\RootPackageInterface')->getMock();
+        $package->method('getExtra')->willReturn(array(Main::EXTRA_PARAM => $FILENAME));
+        /** @var  $stub Composer */
+        $composer = $this->getMockBuilder('Composer\Composer')->getMock();
+        $composer->method('getPackage')->willReturn($package);
+        /** @var  $io IOInterface */
+        $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
+        $plugin = new Main();
+        $plugin->activate($composer, $io);
+        $this->assertEquals($FILENAME, $plugin->getConfigFileName());
+    }
 
-	public function test_activate_withExtra_wrongFile() {
-		$FILENAME = self::$ROOT_DIR . self::FILE_CONFIG_JSON;
-		/** @var  $package Composer\Package\RootPackageInterface */
-		$package = $this->getMockBuilder('Composer\Package\RootPackageInterface')->getMock();
-		$package->method('getExtra')->willReturn(array( Main::EXTRA_PARAM => $FILENAME . '_missedFile' ));
-		/** @var  $stub Composer */
-		$composer = $this->getMockBuilder('Composer\Composer')->getMock();
-		$composer->method('getPackage')->willReturn($package);
-		/** @var  $io IOInterface */
-		$io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
-		$io->expects($this->once())->method('write');
-		$plugin = new Main();
-		$plugin->activate($composer, $io);
-	}
+    public function test_activate_withExtra_wrongFile()
+    {
+        $FILENAME = self::$ROOT_DIR . self::FILE_CONFIG_JSON;
+        /** @var  $package Composer\Package\RootPackageInterface */
+        $package = $this->getMockBuilder('Composer\Package\RootPackageInterface')->getMock();
+        $package->method('getExtra')->willReturn(array(Main::EXTRA_PARAM => $FILENAME . '_missedFile'));
+        /** @var  $stub Composer */
+        $composer = $this->getMockBuilder('Composer\Composer')->getMock();
+        $composer->method('getPackage')->willReturn($package);
+        /** @var  $io IOInterface */
+        $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
+        $io->expects($this->once())->method('write');
+        $plugin = new Main();
+        $plugin->activate($composer, $io);
+    }
 
-	public function test_activate_withoutExtra() {
-		$plugin = new Main();
-		/** @var  $package Composer\Package\RootPackageInterface */
-		$package = $this->getMockBuilder('Composer\Package\RootPackageInterface')->getMock();
-		$package->method('getExtra')->willReturn(array());
-		/** @var  $stub Composer */
-		$composer = $this->getMockBuilder('Composer\Composer')->getMock();
-		$composer->method('getPackage')->willReturn($package);
-		/** @var  $io IOInterface */
-		$io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
-		$plugin->activate($composer, $io);
-		$this->assertNull($plugin->getConfigFileName());
-	}
+    public function test_activate_withoutExtra()
+    {
+        $plugin = new Main();
+        /** @var  $package Composer\Package\RootPackageInterface */
+        $package = $this->getMockBuilder('Composer\Package\RootPackageInterface')->getMock();
+        $package->method('getExtra')->willReturn(array());
+        /** @var  $stub Composer */
+        $composer = $this->getMockBuilder('Composer\Composer')->getMock();
+        $composer->method('getPackage')->willReturn($package);
+        /** @var  $io IOInterface */
+        $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
+        $plugin->activate($composer, $io);
+        $this->assertNull($plugin->getConfigFileName());
+    }
 
-	public function test_getSubscribedEvents() {
-		$events = Main::getSubscribedEvents();
-		$this->assertArrayHasKey(ScriptEvents::POST_INSTALL_CMD, $events);
-		$this->assertArrayHasKey(ScriptEvents::POST_UPDATE_CMD, $events);
-	}
+    public function test_getSubscribedEvents()
+    {
+        $events = Main::getSubscribedEvents();
+        $refl = new \ReflectionClass('\Composer\Script\ScriptEvents');
+        foreach ($refl->getConstants() as $one) {
+            $this->assertArrayHasKey(ScriptEvents::POST_INSTALL_CMD, $events);
+        }
+    }
 
-	public function test_onPostInstallCmd() {
-		$plugin = new Main();
-		/** @var  $event Composer\Script\CommandEvent */
-		$event = $this->getMockBuilder('\Composer\Script\CommandEvent')->disableOriginalConstructor()->getMock();
-		$plugin->onPostInstallCmd($event);
-	}
 
-	public function test_onPostUpdateCmd() {
-		$plugin = new Main();
-		/** @var  $event Composer\Script\CommandEvent */
-		$event = $this->getMockBuilder('\Composer\Script\CommandEvent')->disableOriginalConstructor()->getMock();
-		$plugin->onPostUpdateCmd($event);
-	}
+    public function test_onEvent()
+    {
+        $eventName = ScriptEvents::POST_INSTALL_CMD;
+        $template = new Config\Template();
+        $template->setSource(self::FILE_TMPL_SRC);
+        $template->setDestination(self::FILE_TMPL_DST);
+        $events = array($eventName);
+        $template->setEvents($events);
+        $config = $this->getMockBuilder('\Praxigento\Composer\Plugin\Templates\Config')->disableOriginalConstructor()->getMock();
+        $config->method('getTemplatesForEvent')->with($eventName)->willReturn(array($template));
+        $config = new Config(self::$ROOT_DIR . self::FILE_CONFIG_JSON);
+        /** @var  $io IOInterface */
+        $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
+        /** @var  $event Composer\Script\CommandEvent */
+        $event = $this->getMockBuilder('\Composer\Script\CommandEvent')->disableOriginalConstructor()->getMock();
+        $event->method('getName')->willReturn($eventName);
+        /** @var  $plugin Main */
+        $plugin = new Main();
+        $plugin->setConfig($config);
+        $plugin->setIo($io);
+        $plugin->onEvent($event);
+    }
 
 }

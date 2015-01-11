@@ -2,4 +2,6 @@
 /atlassian-ide-plugin.xml
 /composer.lock
 /composer.phar
+/test/bin/
+/test/mage/
 /vendor/

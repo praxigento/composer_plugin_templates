@@ -33,89 +33,110 @@ use Composer\Script\CommandEvent;
 use Composer\Script\ScriptEvents;
 use Praxigento\Composer\Plugin\Templates\Config;
 
-class Main implements PluginInterface, EventSubscriberInterface {
-	/** Entry name for plugin config file in 'extra' section of composer.json */
-	const EXTRA_PARAM = 'praxigento_composer_plugin_mage_config';
-	/** @var Composer */
-	protected $composer;
-	/** @var Config */
-	protected $config;
-	/** @var IOInterface */
-	protected $io;
-	/** @var  string Name of the plugin's configuration file. */
-	private $configFileName;
+class Main implements PluginInterface, EventSubscriberInterface
+{
+    /** Entry name for plugin config file in 'extra' section of composer.json */
+    const EXTRA_PARAM = 'praxigento_composer_plugin_mage_config';
+    /** @var Composer */
+    private $composer;
+    /** @var Config */
+    private $config;
+    /** @var IOInterface */
+    private $io;
+    /** @var  string Name of the plugin's configuration file. */
+    private $configFileName;
 
-	/**
-	 * Returns an array of event names this subscriber wants to listen to.
-	 *
-	 * The array keys are event names and the value can be:
-	 *
-	 * * The method name to call (priority defaults to 0)
-	 * * An array composed of the method name to call and the priority
-	 * * An array of arrays composed of the method names to call and respective
-	 *   priorities, or 0 if unset
-	 *
-	 * For instance:
-	 *
-	 * * array('eventName' => 'methodName')
-	 * * array('eventName' => array('methodName', $priority))
-	 * * array('eventName' => array(array('methodName1', $priority), array('methodName2'))
-	 *
-	 * @return array The event names to listen to
-	 */
-	public static function getSubscribedEvents() {
-		$result = array(
-			ScriptEvents::POST_INSTALL_CMD => array(
-				array( 'onPostInstallCmd', 0 )
-			),
-			ScriptEvents::POST_UPDATE_CMD  => array(
-				array( 'onPostUpdateCmd', 0 )
-			),
-		);
-		return $result;
-	}
+    /**
+     * Returns an array of event names this subscriber wants to listen to.
+     *
+     * The array keys are event names and the value can be:
+     *
+     * * The method name to call (priority defaults to 0)
+     * * An array composed of the method name to call and the priority
+     * * An array of arrays composed of the method names to call and respective
+     *   priorities, or 0 if unset
+     *
+     * For instance:
+     *
+     * * array('eventName' => 'methodName')
+     * * array('eventName' => array('methodName', $priority))
+     * * array('eventName' => array(array('methodName1', $priority), array('methodName2'))
+     *
+     * @return array The event names to listen to
+     */
+    public static function getSubscribedEvents()
+    {
+        $result = array();
+        /* subscribe to all available events  */
+        foreach (Config::getEventsAvailable() as $one) {
+            $result[$one] = 'onEvent';
+        }
+        return $result;
+    }
 
-	/**
-	 * Apply plugin modifications to composer
-	 *
-	 * @param Composer    $composer
-	 * @param IOInterface $io
-	 */
-	public function activate(Composer $composer, IOInterface $io) {
-		$this->composer = $composer;
-		$this->io       = $io;
-		$extra          = $composer->getPackage()->getExtra();
-		if(isset($extra[ self::EXTRA_PARAM ])) {
-			$this->configFileName = $extra[ self::EXTRA_PARAM ];
-			/* parse configuration */
-			if(file_exists($this->configFileName)) {
-				$this->config = new Config($this->configFileName);
-			} else {
-				$io->write(__CLASS__ . ": Cannot open configuration file (" . $this->configFileName . ").", true);
-			}
+    /**
+     * Setup attribute on tests.
+     *
+     * @param IOInterface $io
+     */
+    public function setIo(IOInterface $io)
+    {
+        $this->io = $io;
+    }
 
-		}
-	}
+    /**
+     * Setup attribute on tests.
+     *
+     * @param Config $config
+     */
+    public function setConfig($config)
+    {
+        $this->config = $config;
+    }
 
-	/**
-	 * @return mixed
-	 */
-	public
-	function getConfigFileName() {
-		return $this->configFileName;
-	}
+    /**
+     * Apply plugin modifications to composer
+     *
+     * @param Composer $composer
+     * @param IOInterface $io
+     */
+    public function activate(Composer $composer, IOInterface $io)
+    {
+        $this->composer = $composer;
+        $this->io = $io;
+        $extra = $composer->getPackage()->getExtra();
+        if (isset($extra[self::EXTRA_PARAM])) {
+            $this->configFileName = $extra[self::EXTRA_PARAM];
+            /* parse configuration */
+            if (file_exists($this->configFileName)) {
+                $this->config = new Config($this->configFileName);
+            } else {
+                $io->write(__CLASS__ . ": Cannot open configuration file (" . $this->configFileName . ").", true);
+            }
+        }
+    }
 
-	public
-	function onPostInstallCmd(
-		CommandEvent $event
-	) {
+    /**
+     * @return mixed
+     */
+    public function getConfigFileName()
+    {
+        return $this->configFileName;
+    }
 
-	}
+    /**
+     * Common handler for all events.
+     * @param CommandEvent $event
+     */
+    public function onEvent(CommandEvent $event)
+    {
+        $name = $event->getName();
+        $templates = $this->config->getTemplatesForEvent($name);
+        $hndl = new TemplateHandler($this->config->getVars(), $this->io);
+        foreach ($templates as $one) {
+            /* process one template */
+            $hndl->process($one);
+        }
+    }
 
-	public
-	function onPostUpdateCmd(
-		CommandEvent $event
-	) {
-
-	}
 }

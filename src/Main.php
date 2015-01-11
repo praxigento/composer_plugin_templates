@@ -110,9 +110,12 @@ class Main implements PluginInterface, EventSubscriberInterface
             /* parse configuration */
             if (file_exists($this->configFileName)) {
                 $this->config = new Config($this->configFileName);
+                $io->write(__CLASS__ . ": Configuration is read from '" . $this->configFileName . "'.", true);
             } else {
-                $io->write(__CLASS__ . ": Cannot open configuration file (" . $this->configFileName . ").", true);
+                $io->write(__CLASS__ . ": Cannot open configuration file '" . $this->configFileName . "'.", true);
             }
+        } else {
+            $io->write(__CLASS__ . ": Extra parameter '" . self::EXTRA_PARAM . "' is empty. Plgin is disabled.", true);
         }
     }
 

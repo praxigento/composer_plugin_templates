@@ -131,11 +131,15 @@ class Main implements PluginInterface, EventSubscriberInterface
     public function onEvent(CommandEvent $event)
     {
         $name = $event->getName();
-        $templates = $this->config->getTemplatesForEvent($name);
-        $hndl = new TemplateHandler($this->config->getVars(), $this->io);
-        foreach ($templates as $one) {
-            /* process one template */
-            $hndl->process($one);
+        if ($this->config) {
+            $templates = $this->config->getTemplatesForEvent($name);
+            $hndl = new TemplateHandler($this->config->getVars(), $this->io);
+            foreach ($templates as $one) {
+                /* process one template */
+                $hndl->process($one);
+            }
+        } else {
+            $this->io->write("Event $name is skipped.");
         }
     }
 

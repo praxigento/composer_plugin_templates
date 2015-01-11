@@ -115,7 +115,7 @@ class Main implements PluginInterface, EventSubscriberInterface
                 $io->write(__CLASS__ . ": Cannot open configuration file '" . $this->configFileName . "'.", true);
             }
         } else {
-            $io->write(__CLASS__ . ": Extra parameter '" . self::EXTRA_PARAM . "' is empty. Plgin is disabled.", true);
+            $io->write(__CLASS__ . ": Extra parameter '" . self::EXTRA_PARAM . "' is empty. Plugin is disabled.", true);
         }
     }
 
@@ -141,8 +141,6 @@ class Main implements PluginInterface, EventSubscriberInterface
                 /* process one template */
                 $hndl->process($one);
             }
-        } else {
-            $this->io->write("Event $name is skipped.");
         }
     }
 

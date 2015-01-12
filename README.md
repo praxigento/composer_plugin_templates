@@ -12,14 +12,8 @@ single file with configuration parameters.
 Add to your project's *composer.json*:
 
     {
-      "repositories": [
-        {
-          "type": "vcs",
-          "url": "https://github.com/praxigento/composer_plugin_templates"
-        }
-      ],
       "require": {
-        "praxigento/composer_plugin_templates": "*@dev"
+        "praxigento/composer_plugin_templates": "*"
       }
     }
 

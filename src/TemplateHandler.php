@@ -54,10 +54,10 @@ class TemplateHandler
             }
             /* save destination file */
             if (is_file($tmpl->getDestination()) && !$tmpl->isCanRewrite()) {
-                $this->io->write(__CLASS__ . ": Destination file '{$tmpl->getSource()}' is already exist and cannot be rewrote (rewrite = false).");
+                $this->io->write(__CLASS__ . ": Destination file '{$tmpl->getDestination()}' is already exist and cannot be rewrote (rewrite = false).");
             } else {
                 $this->saveFile($tmpl->getDestination(), $content);
-                $this->io->write(__CLASS__ . ": Destination file '{$tmpl->getSource()}' is created from source template '{$tmpl->getSource()}'.");
+                $this->io->write(__CLASS__ . ": Destination file '{$tmpl->getDestination()}' is created from source template '{$tmpl->getSource()}'.");
             }
         } else {
             $this->io->write(__CLASS__ . ": Cannot open source template ({$tmpl->getSource()}).");

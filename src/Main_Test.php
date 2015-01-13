@@ -31,7 +31,7 @@ use Composer\Script\ScriptEvents;
 class Main_Test extends \PHPUnit_Framework_TestCase
 {
     const FILE_CONFIG_JSON = 'test/data/templates.json';
-    const FILE_TMPL_SRC = 'test/tmpl/dump.sh.init';
+    const FILE_TMPL_SRC = 'test/tmpl/dump.sh';
     const FILE_TMPL_DST = 'test/bin/dump_db/dump.sh';
     /** @var  string Root directory for the plugin to use test related files and folders. */
     private static $ROOT_DIR;

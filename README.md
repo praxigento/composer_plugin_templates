@@ -43,26 +43,27 @@ parameter inyour project's *composer.json*::
         "MYSQL_PASSWORD": "s8pTo3X5QCsr4SkY48zF",
         "MYSQL_DBNAME": "magento_github_db"
       },
-      "templates": [
-        {
+      "templates": {
+        "local.xml": {
           "src": "test/tmpl/local.xml",
           "dst": "test/mage/app/etc/local.xml",
           "events": "post-install-cmd",
           "rewrite": true
         },
-        {
-          "src": "test/tmpl/dump.sh.init",
+        "dump.sh": {
+          "src": "test/tmpl/dump.sh",
           "dst": "test/bin/dump_db/dump.sh",
+          "rewrite": true,
           "events": [
             "post-install-cmd",
             "post-update-cmd"
           ]
         }
-      ]
+      }
     }
 
 #### vars
-Array of the template's placeholders `${MYSQL_HOST}` and values `localhost` to be inserted into templates:
+Set of the template's placeholders `${MYSQL_HOST}` and values `localhost` to be inserted into templates:
 
     {
       "vars": {
@@ -74,26 +75,29 @@ Array of the template's placeholders `${MYSQL_HOST}` and values `localhost` to b
     }
     
 #### templates
-Array of the templates to be processed on events:
+Set of the templates to be processed on events:
 
     {
-      "templates": [
-        {
+      "templates": {
+        "local.xml": {
           "src": "test/tmpl/local.xml",
           "dst": "test/mage/app/etc/local.xml",
           "events": "post-install-cmd",
           "rewrite": true
         },
-        {
-          "src": "test/tmpl/dump.sh.init",
+        "dump.sh": {
+          "src": "test/tmpl/dump.sh",
           "dst": "test/bin/dump_db/dump.sh",
+          "rewrite": true,
           "events": [
             "post-install-cmd",
             "post-update-cmd"
           ]
         }
-      ]
+      }
     }
+
+Labels (`local.xml` & `dump.sh`) are for reference only.
 
 * *src*: path to template file;
 * *dst*: path to result file (where placeholders are replaced by its values);

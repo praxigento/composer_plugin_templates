@@ -31,6 +31,17 @@ parameter inyour project's *composer.json*::
       }
     }
 
+Plugin can use more than one configuration file, data from all files will be merged into one config structure:
+
+    {
+      "extra": {
+        "praxigento_templates_config": ["./under_vc.json", "./not_under_vc.json"]
+      }
+    }
+
+This can be useful in case when set of templates is the same for all instances (this part of configuration 
+can be under version control) and variables (all or part of them) are unique for each instance. 
+
 
 ### Configuration file structure
 

@@ -30,118 +30,123 @@ use Composer\EventDispatcher\EventSubscriberInterface;
 use Composer\IO\IOInterface;
 use Composer\Plugin\PluginInterface;
 use Composer\Script\CommandEvent;
-use Composer\Script\ScriptEvents;
 use Praxigento\Composer\Plugin\Templates\Config;
 
-class Main implements PluginInterface, EventSubscriberInterface
-{
-    /** Entry name for plugin config file in 'extra' section of composer.json */
-    const EXTRA_PARAM = 'praxigento_templates_config';
-    /** @var Composer */
-    private $composer;
-    /** @var Config */
-    private $config;
-    /** @var IOInterface */
-    private $io;
-    /** @var  string Name of the plugin's configuration file. */
-    private $configFileName;
+class Main implements PluginInterface, EventSubscriberInterface {
+	/** Entry name for plugin config file in 'extra' section of composer.json */
+	const EXTRA_PARAM = 'praxigento_templates_config';
+	/** @var Composer */
+	private $composer;
+	/** @var Config */
+	private $config;
+	/** @var  string|array Names of the plugin's configuration files. */
+	private $configFileNames;
+	/** @var IOInterface */
+	private $io;
 
-    /**
-     * Returns an array of event names this subscriber wants to listen to.
-     *
-     * The array keys are event names and the value can be:
-     *
-     * * The method name to call (priority defaults to 0)
-     * * An array composed of the method name to call and the priority
-     * * An array of arrays composed of the method names to call and respective
-     *   priorities, or 0 if unset
-     *
-     * For instance:
-     *
-     * * array('eventName' => 'methodName')
-     * * array('eventName' => array('methodName', $priority))
-     * * array('eventName' => array(array('methodName1', $priority), array('methodName2'))
-     *
-     * @return array The event names to listen to
-     */
-    public static function getSubscribedEvents()
-    {
-        $result = array();
-        /* subscribe to all available events  */
-        foreach (Config::getEventsAvailable() as $one) {
-            $result[$one] = 'onEvent';
-        }
-        return $result;
-    }
+	/**
+	 * Returns an array of event names this subscriber wants to listen to.
+	 *
+	 * The array keys are event names and the value can be:
+	 *
+	 * * The method name to call (priority defaults to 0)
+	 * * An array composed of the method name to call and the priority
+	 * * An array of arrays composed of the method names to call and respective
+	 *   priorities, or 0 if unset
+	 *
+	 * For instance:
+	 *
+	 * * array('eventName' => 'methodName')
+	 * * array('eventName' => array('methodName', $priority))
+	 * * array('eventName' => array(array('methodName1', $priority), array('methodName2'))
+	 *
+	 * @return array The event names to listen to
+	 */
+	public static function getSubscribedEvents() {
+		$result = array();
+		/* subscribe to all available events  */
+		foreach(Config::getEventsAvailable() as $one) {
+			$result[ $one ] = 'onEvent';
+		}
+		return $result;
+	}
 
-    /**
-     * Setup attribute on tests.
-     *
-     * @param IOInterface $io
-     */
-    public function setIo(IOInterface $io)
-    {
-        $this->io = $io;
-    }
+	/**
+	 * Apply plugin modifications to composer
+	 *
+	 * @param Composer    $composer
+	 * @param IOInterface $io
+	 */
+	public function activate(Composer $composer, IOInterface $io) {
+		$this->composer = $composer;
+		$this->io       = $io;
+		$extra          = $composer->getPackage()->getExtra();
+		if(isset($extra[ self::EXTRA_PARAM ])) {
+			$files = $extra[ self::EXTRA_PARAM ];
+			/* parse configuration files */
+			if(!is_array($files)) {
+				$this->configFileNames = array( $files );
+			} else {
+				$this->configFileNames = $files;
+			}
+			foreach($this->configFileNames as $one) {
+				if(file_exists($one)) {
+					$config = new Config($one);
+					$io->write(__CLASS__ . ": Configuration is read from '$one'.", true);
+					if(is_null($this->config)) {
+						$this->config = $config;
+					} else {
+						$this->config->merge($config);
+					}
+				} else {
+					$io->write(__CLASS__ . ": Cannot open configuration file '$one'.", true);
+				}
+			}
+		} else {
+			$io->write(__CLASS__ . ": Extra parameter '" . self::EXTRA_PARAM . "' is empty. Plugin is disabled.", true);
+		}
+	}
 
-    /**
-     * Setup attribute on tests.
-     *
-     * @param Config $config
-     */
-    public function setConfig($config)
-    {
-        $this->config = $config;
-    }
+	/**
+	 * @return mixed
+	 */
+	public function getConfigFileNames() {
+		return $this->configFileNames;
+	}
 
-    /**
-     * Apply plugin modifications to composer
-     *
-     * @param Composer $composer
-     * @param IOInterface $io
-     */
-    public function activate(Composer $composer, IOInterface $io)
-    {
-        $this->composer = $composer;
-        $this->io = $io;
-        $extra = $composer->getPackage()->getExtra();
-        if (isset($extra[self::EXTRA_PARAM])) {
-            $this->configFileName = $extra[self::EXTRA_PARAM];
-            /* parse configuration */
-            if (file_exists($this->configFileName)) {
-                $this->config = new Config($this->configFileName);
-                $io->write(__CLASS__ . ": Configuration is read from '" . $this->configFileName . "'.", true);
-            } else {
-                $io->write(__CLASS__ . ": Cannot open configuration file '" . $this->configFileName . "'.", true);
-            }
-        } else {
-            $io->write(__CLASS__ . ": Extra parameter '" . self::EXTRA_PARAM . "' is empty. Plugin is disabled.", true);
-        }
-    }
+	/**
+	 * Common handler for all events.
+	 *
+	 * @param CommandEvent $event
+	 */
+	public function onEvent(CommandEvent $event) {
+		$name = $event->getName();
+		if($this->config) {
+			$templates = $this->config->getTemplatesForEvent($name);
+			$hndl      = new TemplateHandler($this->config->getVars(), $this->io);
+			foreach($templates as $one) {
+				/* process one template */
+				$hndl->process($one);
+			}
+		}
+	}
 
-    /**
-     * @return mixed
-     */
-    public function getConfigFileName()
-    {
-        return $this->configFileName;
-    }
+	/**
+	 * Setup attribute on tests.
+	 *
+	 * @param Config $config
+	 */
+	public function setConfig($config) {
+		$this->config = $config;
+	}
 
-    /**
-     * Common handler for all events.
-     * @param CommandEvent $event
-     */
-    public function onEvent(CommandEvent $event)
-    {
-        $name = $event->getName();
-        if ($this->config) {
-            $templates = $this->config->getTemplatesForEvent($name);
-            $hndl = new TemplateHandler($this->config->getVars(), $this->io);
-            foreach ($templates as $one) {
-                /* process one template */
-                $hndl->process($one);
-            }
-        }
-    }
+	/**
+	 * Setup attribute on tests.
+	 *
+	 * @param IOInterface $io
+	 */
+	public function setIo(IOInterface $io) {
+		$this->io = $io;
+	}
 
 }

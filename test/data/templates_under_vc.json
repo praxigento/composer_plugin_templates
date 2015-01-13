@@ -1,0 +1,13 @@
+{
+  "vars": {
+    "COMMON_VAR": "this variable is under version control"
+  },
+  "templates": {
+    "common.file": {
+      "src": "common.src",
+      "dst": "common.dst",
+      "events": "post-install-cmd",
+      "rewrite": true
+    }
+  }
+}

@@ -56,7 +56,7 @@ class Config_Test extends \PHPUnit_Framework_TestCase
 
     public function test_getTemplatesForEvent()
     {
-        $FILE = self::$ROOT_DIR . Main_Test::FILE_CONFIG_JSON;
+        $FILE = self::$ROOT_DIR . Main_Test::FILE_CONFIG_JSON_NVC;
         $eventName = ScriptEvents::POST_INSTALL_CMD;
         $config = new Config($FILE);
         $tmpls = $config->getTemplatesForEvent($eventName);
@@ -66,7 +66,7 @@ class Config_Test extends \PHPUnit_Framework_TestCase
 
     public function test_constructor()
     {
-        $FILE = self::$ROOT_DIR . Main_Test::FILE_CONFIG_JSON;
+        $FILE = self::$ROOT_DIR . Main_Test::FILE_CONFIG_JSON_NVC;
         $config = new Config($FILE);
         $this->assertTrue(is_array($config->getVars()));
         $this->assertEquals(4, count($config->getVars()));

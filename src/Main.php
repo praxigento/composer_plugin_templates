@@ -118,7 +118,7 @@ class Main implements PluginInterface, EventSubscriberInterface {
     /**
      * Common handler for all events.
      *
-     * @param CommandEvent $event
+     * @param Event $event
      */
     public function onEvent(Event $event) {
         $name = $event->getName();

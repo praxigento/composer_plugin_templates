@@ -31,7 +31,12 @@ use Praxigento\Composer\Plugin\Templates\Config\Condition;
 class TemplateHandler {
     /** Directory Separator */
     const DS = '/';
-    /** @var \Composer\IO\IOInterface */
+    /**
+     * See http://symfony.com/doc/current/components/console/introduction.html for more
+     * Available tags are: [info|comment|question|error]
+     *
+     * @var \Composer\IO\IOInterface
+     */
     private $io;
     private $vars;
 
@@ -57,20 +62,20 @@ class TemplateHandler {
                 }
                 /* save destination file */
                 if(is_file($tmpl->getDestination()) && !$tmpl->isCanRewrite()) {
-                    $this->io->write(__CLASS__ . ": Destination file '{$tmpl->getDestination()}' is already exist and cannot be rewrote (rewrite = false).");
+                    $this->io->write(__CLASS__ . ": <comment>Destination file '{$tmpl->getDestination()}' is already exist and cannot be rewrote (rewrite = false).<comment>");
                 } else {
                     $this->saveFile($tmpl->getDestination(), $content);
-                    $this->io->write(__CLASS__ . ": Destination file '{$tmpl->getDestination()}' is created from source template '{$tmpl->getSource()}'.");
+                    $this->io->write(__CLASS__ . ": <info>Destination file '{$tmpl->getDestination()}' is created from source template '{$tmpl->getSource()}'.<info>");
                 }
             } else {
-                $this->io->write(__CLASS__ . ": Cannot open source template ({$tmpl->getSource()}).");
+                $this->io->write(__CLASS__ . ": <error>Cannot open source template ({$tmpl->getSource()}).</error>");
             }
         } else {
             /* there is wrong condition for template */
             $outSrc = $tmpl->getSource();
             $cond = $tmpl->getCondition();
             $outCond = '${' . $cond->getVar() . '}' . $cond->getOperation() . $cond->getValue();
-            $this->io->write(__CLASS__ . ": Cannot open process template ($outSrc) because condition ($outCond) is 'false'.");
+            $this->io->write(__CLASS__ . ": <error>Cannot open process template ($outSrc) because condition ($outCond) is 'false'.</error>");
         }
     }
 

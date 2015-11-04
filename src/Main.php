@@ -74,6 +74,9 @@ class Main implements PluginInterface, EventSubscriberInterface {
     /**
      * Apply plugin modifications to composer
      *
+     * See http://symfony.com/doc/current/components/console/introduction.html for more about $io
+     *      Available tags are: [info|comment|question|error]
+     *
      * @param Composer    $composer
      * @param IOInterface $io
      */

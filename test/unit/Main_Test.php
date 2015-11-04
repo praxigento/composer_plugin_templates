@@ -28,11 +28,15 @@ use Composer\Composer;
 use Composer\IO\IOInterface;
 use Composer\Script\ScriptEvents;
 
+require_once(__DIR__ . '/../../phpunit.bootstrap.php');
+
 class Main_Test extends \PHPUnit_Framework_TestCase {
     const FILE_CONFIG_JSON_NVC = 'test/data/templates_not_under_vc.json';
     const FILE_CONFIG_JSON_VC = 'test/data/templates_under_vc.json';
+    const FILE_CONFIG_JSON_INVALID = 'test/data/invalid.json';
     const FILE_TMPL_DST = 'test/bin/dump_db/dump.sh';
     const FILE_TMPL_SRC = 'test/tmpl/dump.sh';
+    const CLAZZ = 'Praxigento\Composer\Plugin\Templates\Main';
 
     public function test_activate_withExtra() {
         $FILENAME = PRJ_ROOT . '/' . self::FILE_CONFIG_JSON_NVC;
@@ -103,6 +107,34 @@ class Main_Test extends \PHPUnit_Framework_TestCase {
         }
     }
 
+    public function test_activate_withInvalidJson() {
+        $FILENAME = PRJ_ROOT . '/' . self::FILE_CONFIG_JSON_INVALID;
+        $plugin = new Main();
+        /** @var  $mockPkg Composer\Package\RootPackageInterface */
+        $mockPkg = $this
+            ->getMockBuilder('Composer\Package\RootPackageInterface')
+            ->getMock();
+        $mockPkg
+            ->method('getExtra')
+            ->willReturn([ Main::EXTRA_PARAM => $FILENAME ]);
+        /** @var  $stub Composer */
+        $mockComposer = $this
+            ->getMockBuilder('Composer\Composer')
+            ->getMock();
+        $mockComposer
+            ->method('getPackage')
+            ->willReturn($mockPkg);
+        // $io->writeError(__CLASS__ . ": <error>Cannot read valid JSON from configuration file '$one'. Plugin will be disabled.</error>", true);
+        $mockIo = $this
+            ->getMockBuilder('Composer\IO\IOInterface')
+            ->getMock();
+        $expected = self::CLAZZ . ": <error>Cannot read valid JSON from configuration file '$FILENAME'. Plugin will be disabled.</error>";
+        $mockIo
+            ->expects($this->once())
+            ->method('writeError')
+            ->with($expected);
+        $plugin->activate($mockComposer, $mockIo);
+    }
 
     public function test_onEvent() {
         $eventName = ScriptEvents::POST_INSTALL_CMD;

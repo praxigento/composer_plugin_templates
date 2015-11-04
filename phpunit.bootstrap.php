@@ -28,3 +28,12 @@ require __DIR__ . '/vendor/autoload.php';
 if(!defined('PRJ_ROOT')) {
     define('PRJ_ROOT', __DIR__);
 }
+
+/** Absolute path to source template file for tests. */
+if(!defined('FILE_SRC_DUMP ')) {
+    define('FILE_SRC_DUMP', PRJ_ROOT . '/test/tmpl/dump.sh');
+}
+/** Absolute path to destination file for tests. */
+if(!defined('FILE_DST_DUMP ')) {
+    define('FILE_DST_DUMP', PRJ_ROOT . '/test/bin/dump.sh');
+}

@@ -134,7 +134,7 @@ class Main implements PluginInterface, EventSubscriberInterface {
         $name = $event->getName();
         if($this->config) {
             $templates = $this->config->getTemplatesForEvent($name);
-            $hndl = new TemplateHandler($this->config->getVars(), $this->io);
+            $hndl = new Handler($this->config->getVars(), $this->io);
             foreach($templates as $one) {
                 /* process one template */
                 $hndl->process($one);

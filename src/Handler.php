@@ -26,11 +26,8 @@
 namespace Praxigento\Composer\Plugin\Templates;
 
 use Composer\IO\IOInterface;
-use Praxigento\Composer\Plugin\Templates\Config\Condition;
 
-class TemplateHandler {
-    /** Directory Separator */
-    const DS = '/';
+class Handler {
     /**
      * See http://symfony.com/doc/current/components/console/introduction.html for more
      * Available tags are: [info|comment|question|error]
@@ -38,18 +35,47 @@ class TemplateHandler {
      * @var \Composer\IO\IOInterface
      */
     private $io;
+    /**
+     * Array of the template vars.
+     * @var array
+     */
     private $vars;
+    /**
+     * To create full path to the file on save.
+     * @var Handler\FileSaver
+     */
+    private $fileSaver;
+    /**
+     * To validate conditions.
+     * @var null|Handler\ConditionValidator
+     */
+    private $conditionValidator;
 
-    function __construct($vars, IOInterface $io) {
+    /**
+     * Handler constructor.
+     *
+     * @param                                 $vars array of the template vars
+     * @param IOInterface                     $io IO object from Composer
+     * @param Handler\FileSaver|null          $fileSaver
+     * @param Handler\ConditionValidator|null $conditionValidator
+     */
+    function __construct(
+        $vars,
+        IOInterface $io,
+        Handler\FileSaver $fileSaver = null,
+        Handler\ConditionValidator $conditionValidator = null
+    ) {
         $this->vars = $vars;
         $this->io = $io;
+        $this->fileSaver = is_null($fileSaver) ? new Handler\FileSaver() : $fileSaver;
+        $this->conditionValidator = is_null($conditionValidator) ? new Handler\ConditionValidator() : $conditionValidator;
     }
 
     public function process(Config\Template $tmpl) {
         /* process template if condition is not set or condition is valid */
         if(
             ($tmpl->getCondition() == null) ||
-            ($this->isConditionValid($tmpl->getCondition()))
+            ($this->conditionValidator->isValid($tmpl->getCondition(), $this->vars))
         ) {
             /* load source file */
             if(is_file($tmpl->getSource())) {
@@ -64,11 +90,11 @@ class TemplateHandler {
                 if(is_file($tmpl->getDestination()) && !$tmpl->isCanRewrite()) {
                     $this->io->write(__CLASS__ . ": <comment>Destination file '{$tmpl->getDestination()}' is already exist and cannot be rewrote (rewrite = false).</comment>");
                 } else {
-                    $this->saveFile($tmpl->getDestination(), $content);
+                    $this->fileSaver->save($tmpl->getDestination(), $content);
                     $this->io->write(__CLASS__ . ": <info>Destination file '{$tmpl->getDestination()}' is created from source template '{$tmpl->getSource()}'.</info>");
                 }
             } else {
-                $this->io->write(__CLASS__ . ": <error>Cannot open source template ({$tmpl->getSource()}).</error>");
+                $this->io->writeError(__CLASS__ . ": <error>Cannot open source template ({$tmpl->getSource()}).</error>");
             }
         } else {
             /* there is wrong condition for template */
@@ -79,51 +105,5 @@ class TemplateHandler {
         }
     }
 
-    /**
-     * Calculate condition.
-     *
-     * @param Condition $condition
-     *
-     * @return bool
-     */
-    private function isConditionValid(Condition $condition) {
-        $result = false;
-        $name = $condition->getVar();
-        $oper = $condition->getOperation();
-        $value = (string)$condition->getValue();
-        if(isset($this->vars[$name])) {
-            $var = (string)$this->vars[$name];
-            switch($oper) {
-                case Condition::OPER_EQ:
-                    $result = (strcmp($var, $value) == 0);
-                    break;
-                case Condition::OPER_NEQ:
-                    $result = (strcmp($var, $value) != 0);
-                    break;
-            }
-        }
-        return $result;
-    }
 
-    /**
-     * Thanks for Trent Tompkins: http://php.net/manual/ru/function.file-put-contents.php#84180
-     *
-     * @param $fullpath
-     * @param $contents
-     */
-    private function saveFile($fullpath, $contents) {
-        $parts = explode(self::DS, $fullpath);
-        /* remove filename from array */
-        array_pop($parts);
-        $dir = array_shift($parts);
-        if(!is_dir($dir)) {
-            mkdir($dir);
-        }
-        foreach($parts as $part) {
-            if(!is_dir($dir .= self::DS . $part)) {
-                mkdir($dir);
-            }
-        }
-        file_put_contents($fullpath, $contents);
-    }
 }

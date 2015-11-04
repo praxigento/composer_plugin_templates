@@ -93,25 +93,25 @@ class Main implements PluginInterface, EventSubscriberInterface {
                 if(file_exists($one)) {
                     $config = new Config($one);
                     if($config->hasRawData()) {
-                        $io->write(__CLASS__ . ": Configuration is read from '$one'.", true);
+                        $io->write(__CLASS__ . ": <info>Configuration is read from '$one'.</info>", true);
                         if(is_null($this->config)) {
                             $this->config = $config;
                         } else {
                             $this->config->merge($config);
                         }
                     } else {
-                        $io->writeError(__CLASS__ . ": Cannot read valid JSON from configuration file '$one'. Plugin will be disabled.", true);
+                        $io->writeError(__CLASS__ . ": <error>Cannot read valid JSON from configuration file '$one'. Plugin will be disabled.</error>", true);
                         $this->config = null;
                         break;
                     }
                 } else {
-                    $io->writeError(__CLASS__ . ": Cannot open configuration file '$one'. Plugin will be disabled.", true);
+                    $io->writeError(__CLASS__ . ": <error>Cannot open configuration file '$one'. Plugin will be disabled.</error>", true);
                     $this->config = null;
                     break;
                 }
             }
         } else {
-            $io->writeError(__CLASS__ . ": Extra parameter '" . self::EXTRA_PARAM . "' is empty. Plugin is disabled.", true);
+            $io->writeError(__CLASS__ . ": <error>Extra parameter '" . self::EXTRA_PARAM . "' is empty. Plugin is disabled.</error>", true);
         }
     }
 

@@ -75,7 +75,7 @@ class TemplateHandler {
             $outSrc = $tmpl->getSource();
             $cond = $tmpl->getCondition();
             $outCond = '${' . $cond->getVar() . '}' . $cond->getOperation() . $cond->getValue();
-            $this->io->write(__CLASS__ . ": <error>Cannot open process template ($outSrc) because condition ($outCond) is 'false'.</error>");
+            $this->io->write(__CLASS__ . ": <comment>Skip processing of the template ($outSrc) because condition ($outCond) is 'false'.</comment>");
         }
     }
 

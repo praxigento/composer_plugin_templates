@@ -102,6 +102,11 @@ Set of the templates to be processed on events:
           "src": "test/tmpl/dump.sh",
           "dst": "test/bin/dump_db/dump.sh",
           "rewrite": true,
+          "condition": {
+            "var": "MYSQL_HOST",
+            "operation": "!=",
+            "value": "localhost"
+          },
           "events": [
             "post-install-cmd",
             "post-update-cmd"
@@ -114,8 +119,13 @@ Labels (`local.xml` & `dump.sh`) are for reference only.
 
 * *src*: path to template file;
 * *dst*: path to result file (where placeholders are replaced by its values);
-* *events*: one event (string) or set of events (array of strings) to fire templates processing on ([available events]);
 * *rewrite*: 'true' to rewrite destination file if exists;
+* *condition*: simple condition to process this template file;
+    * *var*: name of the variable for left part of the condition;
+    * *operation*: one of the two operations ('=' or '!=');
+    * *value*: string value for compare (right part of the operation);
+* *events*: one event (string) or set of events (array of strings) to fire templates processing on ([available events]);
+
 
 ## License
 

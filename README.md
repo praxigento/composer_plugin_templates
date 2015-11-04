@@ -1,5 +1,7 @@
 # Praxigento plugin for PHP Composer to generate local configs from templates
 
+[![Build Status](https://travis-ci.org/praxigento/composer_plugin_templates.svg)](https://travis-ci.org/praxigento/composer_plugin_templates/)
+
 ## What is this?
 
 Plugin for PHP Composer to create locally specific configuration from set of template files and from 

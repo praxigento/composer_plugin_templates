@@ -6,6 +6,7 @@ php:
   - '7'
 
 before_install:
+  - composer self-update  # update composer
   - composer install  # install project using PHP Composer
 
 notifications:

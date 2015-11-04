@@ -25,43 +25,79 @@
 
 namespace Praxigento\Composer\Plugin\Templates;
 
-use \Composer\IO\IOInterface;
+use Composer\IO\IOInterface;
+use Praxigento\Composer\Plugin\Templates\Config\Condition;
 
-class TemplateHandler
-{
+class TemplateHandler {
+    /** Directory Separator */
+    const DS = '/';
     /** @var \Composer\IO\IOInterface */
     private $io;
     private $vars;
-    /** Directory Separator */
-    const DS = '/';
 
-    function __construct($vars, IOInterface $io)
-    {
+    function __construct($vars, IOInterface $io) {
         $this->vars = $vars;
         $this->io = $io;
     }
 
-    public function process(Config\Template $tmpl)
-    {
-        /* load source file */
-        if (is_file($tmpl->getSource())) {
-            $content = file_get_contents($tmpl->getSource());
-            /* replace all vars by values */
-            if (is_array($this->vars)) {
-                foreach ($this->vars as $key => $value) {
-                    $content = str_replace('${' . $key . '}', $value, $content);
+    public function process(Config\Template $tmpl) {
+        /* process template if condition is not set or condition is valid */
+        if(
+            ($tmpl->getCondition() == null) ||
+            ($this->isConditionValid($tmpl->getCondition()))
+        ) {
+            /* load source file */
+            if(is_file($tmpl->getSource())) {
+                $content = file_get_contents($tmpl->getSource());
+                /* replace all vars by values */
+                if(is_array($this->vars)) {
+                    foreach($this->vars as $key => $value) {
+                        $content = str_replace('${' . $key . '}', $value, $content);
+                    }
                 }
-            }
-            /* save destination file */
-            if (is_file($tmpl->getDestination()) && !$tmpl->isCanRewrite()) {
-                $this->io->write(__CLASS__ . ": Destination file '{$tmpl->getDestination()}' is already exist and cannot be rewrote (rewrite = false).");
+                /* save destination file */
+                if(is_file($tmpl->getDestination()) && !$tmpl->isCanRewrite()) {
+                    $this->io->write(__CLASS__ . ": Destination file '{$tmpl->getDestination()}' is already exist and cannot be rewrote (rewrite = false).");
+                } else {
+                    $this->saveFile($tmpl->getDestination(), $content);
+                    $this->io->write(__CLASS__ . ": Destination file '{$tmpl->getDestination()}' is created from source template '{$tmpl->getSource()}'.");
+                }
             } else {
-                $this->saveFile($tmpl->getDestination(), $content);
-                $this->io->write(__CLASS__ . ": Destination file '{$tmpl->getDestination()}' is created from source template '{$tmpl->getSource()}'.");
+                $this->io->write(__CLASS__ . ": Cannot open source template ({$tmpl->getSource()}).");
             }
         } else {
-            $this->io->write(__CLASS__ . ": Cannot open source template ({$tmpl->getSource()}).");
+            /* there is wrong condition for template */
+            $outSrc = $tmpl->getSource();
+            $cond = $tmpl->getCondition();
+            $outCond = '${' . $cond->getVar() . '}' . $cond->getOperation() . $cond->getValue();
+            $this->io->write(__CLASS__ . ": Cannot open process template ($outSrc) because condition ($outCond) is 'false'.");
         }
+    }
+
+    /**
+     * Calculate condition.
+     *
+     * @param Condition $condition
+     *
+     * @return bool
+     */
+    private function isConditionValid(Condition $condition) {
+        $result = false;
+        $name = $condition->getVar();
+        $oper = $condition->getOperation();
+        $value = (string)$condition->getValue();
+        if(isset($this->vars[$name])) {
+            $var = (string)$this->vars[$name];
+            switch($oper) {
+                case Condition::OPER_EQ:
+                    $result = (strcmp($var, $value) == 0);
+                    break;
+                case Condition::OPER_NEQ:
+                    $result = (strcmp($var, $value) != 0);
+                    break;
+            }
+        }
+        return $result;
     }
 
     /**
@@ -70,17 +106,16 @@ class TemplateHandler
      * @param $fullpath
      * @param $contents
      */
-    private function saveFile($fullpath, $contents)
-    {
+    private function saveFile($fullpath, $contents) {
         $parts = explode(self::DS, $fullpath);
         /* remove filename from array */
         array_pop($parts);
         $dir = array_shift($parts);
-        if (!is_dir($dir)) {
+        if(!is_dir($dir)) {
             mkdir($dir);
         }
-        foreach ($parts as $part) {
-            if (!is_dir($dir .= self::DS . $part)) {
+        foreach($parts as $part) {
+            if(!is_dir($dir .= self::DS . $part)) {
                 mkdir($dir);
             }
         }

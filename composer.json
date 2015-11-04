@@ -22,7 +22,11 @@
     "psr-4": {
       "Praxigento\\Composer\\Plugin\\Templates\\": "src/"
     }
-  },
+  }, "autoload-dev": {
+  "psr-4": {
+    "Praxigento\\Composer\\Plugin\\Templates\\": "test/unit"
+  }
+},
   "extra": {
     "class": "Praxigento\\Composer\\Plugin\\Templates\\Main"
   },

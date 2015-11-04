@@ -19,8 +19,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /**
- * Include autoloaders to run tests from IDE.
+ * Include autoloader to run tests from IDE.
  *
  * User: Alex Gusev <alex@flancer64.com>
  */
-require __DIR__.'/vendor/autoload.php';
+require __DIR__ . '/vendor/autoload.php';
+/** Root folder for the project to compose paths to files. */
+if(!defined('PRJ_ROOT')) {
+    define('PRJ_ROOT', __DIR__);
+}

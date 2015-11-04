@@ -27,13 +27,17 @@
 namespace Praxigento\Composer\Plugin\Templates\Config;
 
 
-class Template
-{
+class Template {
     /**
      * Flag to rewrite existing destination.
      * @var  boolean
      */
     private $canRewrite = false;
+    /**
+     * Condition for conditional processing.     *
+     * @var  Condition
+     */
+    private $condition;
     /**
      * path to destination file.
      * @var string
@@ -51,66 +55,72 @@ class Template
     private $source;
 
     /**
+     * @return Condition
+     */
+    public function getCondition() {
+        return $this->condition;
+    }
+
+    /**
+     * @param Condition $val
+     */
+    public function setCondition($val) {
+        $this->condition = $val;
+    }
+
+    /**
      * @return string
      */
-    public function getDestination()
-    {
+    public function getDestination() {
         return $this->destination;
     }
 
     /**
-     * @param string $destination
+     * @param string $val
      */
-    public function setDestination($destination)
-    {
-        $this->destination = $destination;
+    public function setDestination($val) {
+        $this->destination = $val;
     }
 
     /**
      * @return array
      */
-    public function getEvents()
-    {
+    public function getEvents() {
         return $this->events;
     }
 
     /**
-     * @param array $events
+     * @param array $val
      */
-    public function setEvents($events)
-    {
-        $this->events = $events;
+    public function setEvents($val) {
+        $this->events = $val;
     }
 
     /**
      * @return string
      */
-    public function getSource()
-    {
+    public function getSource() {
         return $this->source;
     }
 
     /**
-     * @param string $source
+     * @param string $val
      */
-    public function setSource($source)
-    {
-        $this->source = $source;
+    public function setSource($val) {
+        $this->source = $val;
     }
 
     /**
      * @return boolean
      */
-    public function isCanRewrite()
-    {
+    public function isCanRewrite() {
         return $this->canRewrite;
     }
 
     /**
-     * @param boolean $canRewrite
+     * @param boolean $val
      */
-    public function setCanRewrite($canRewrite)
-    {
-        $this->canRewrite = filter_var($canRewrite, FILTER_VALIDATE_BOOLEAN);
+    public function setCanRewrite($val) {
+        $this->canRewrite = filter_var($val, FILTER_VALIDATE_BOOLEAN);
     }
 }

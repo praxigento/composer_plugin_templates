@@ -9,11 +9,18 @@
          stopOnFailure="false"
          syntaxCheck="false"
          bootstrap="phpunit.bootstrap.php"
-        >
-
+>
     <testsuites>
         <testsuite name="Plugin Test Suite">
-            <directory suffix="_Test.php">./src/</directory>
+            <directory suffix="_Test.php">./test/unit/</directory>
         </testsuite>
     </testsuites>
+    <logging>
+        <log
+                type="coverage-html"
+                target="./build/coverage"
+                lowUpperBound="35"
+                highLowerBound="70"
+        />
+    </logging>
 </phpunit>

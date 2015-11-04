@@ -26,37 +26,17 @@ namespace Praxigento\Composer\Plugin\Templates;
 
 use Composer\Script\ScriptEvents;
 
-class Config_Test extends \PHPUnit_Framework_TestCase
-{
-    /** @var  string Root directory for the plugin to use test related files and folders. */
-    private static $ROOT_DIR;
+require_once(__DIR__ . '/../../phpunit.bootstrap.php');
 
-    /**
-     * Traverse up to 'phpunit.xml.dist' and save root folder.
-     */
-    public static function setUpBeforeClass()
-    {
-        $dir = './';
-        $file = 'phpunit.xml.dist';
-        for ($i = 0; $i < 32; $i++) {
-            if (file_exists($dir . $file)) {
-                break;
-            } else {
-                $dir .= '../';
-            }
-        }
-        self::$ROOT_DIR = $dir;
-    }
+class Config_Test extends \PHPUnit_Framework_TestCase {
 
-    public function test_getEventsAvailable()
-    {
+    public function test_getEventsAvailable() {
         $events = Config::getEventsAvailable();
         $this->assertTrue(is_array($events));
     }
 
-    public function test_getTemplatesForEvent()
-    {
-        $FILE = self::$ROOT_DIR . Main_Test::FILE_CONFIG_JSON_NVC;
+    public function test_getTemplatesForEvent() {
+        $FILE = PRJ_ROOT . '/' . Main_Test::FILE_CONFIG_JSON_NVC;
         $eventName = ScriptEvents::POST_INSTALL_CMD;
         $config = new Config($FILE);
         $tmpls = $config->getTemplatesForEvent($eventName);
@@ -64,26 +44,25 @@ class Config_Test extends \PHPUnit_Framework_TestCase
         $this->assertEquals(2, count($tmpls));
     }
 
-    public function test_constructor()
-    {
-        $FILE = self::$ROOT_DIR . Main_Test::FILE_CONFIG_JSON_NVC;
+    public function test_constructor() {
+        $FILE = PRJ_ROOT . '/' . Main_Test::FILE_CONFIG_JSON_NVC;
         $config = new Config($FILE);
         $this->assertTrue(is_array($config->getVars()));
-        $this->assertEquals(4, count($config->getVars()));
+        $this->assertEquals(5, count($config->getVars()), "Wrong count of vars in the test data.");
         $tmpls = $config->getTemplates();
         $this->assertTrue(is_array($tmpls));
-        $this->assertEquals(2, count($tmpls));
+        $this->assertEquals(3, count($tmpls), "Wrong count of valid templates in the test data.");
         /** @var $t1 Config\Template */
         $t1 = $tmpls[0];
         $this->assertTrue(is_array($t1->getEvents()));
-        $this->assertEquals(1, count($t1->getEvents()));
+        $this->assertEquals(1, count($t1->getEvents()), "Wrong count of events for 'local.xml' template.");
         /** @var $t2 Config\Template */
         $t2 = $tmpls[1];
         $this->assertTrue(is_array($t2->getEvents()));
-        $this->assertEquals(2, count($t2->getEvents()));
+        $this->assertEquals(2, count($t2->getEvents()), "Wrong count of events for 'dump.sh' template.");
         /* validate events enabled */
         $events = $config->getEventsEnabled();
         $this->assertTrue(is_array($events));
-        $this->assertEquals(2, count($events));
+        $this->assertEquals(3, count($events), "Wrong count of total enabled events for all templates.");
     }
 }

@@ -3,7 +3,8 @@
     "MYSQL_HOST": "localhost",
     "MYSQL_USER": "magento_github_user",
     "MYSQL_PASSWORD": "s8pTo3X5QCsr4SkY48zF",
-    "MYSQL_DBNAME": "magento_github_db"
+    "MYSQL_DBNAME": "magento_github_db",
+    "DEPLOYMENT_TYPE": "pilot"
   },
   "templates": {
     "local.xml": {
@@ -44,6 +45,16 @@
       "src": "src",
       "dst": "dst",
       "events": ""
+    },
+    "entry with condition": {
+      "src": "src",
+      "dst": "dst",
+      "events": ["post-status-cmd"],
+      "condition": {
+        "var": "DEPLOYMENT_TYPE",
+        "operation": "=",
+        "value": "pilot"
+      }
     }
   }
 }

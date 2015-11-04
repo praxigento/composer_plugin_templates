@@ -29,7 +29,6 @@ use Composer\Composer;
 use Composer\EventDispatcher\EventSubscriberInterface;
 use Composer\IO\IOInterface;
 use Composer\Plugin\PluginInterface;
-use Composer\Script\CommandEvent;
 use Composer\Script\Event;
 use Praxigento\Composer\Plugin\Templates\Config;
 
@@ -64,10 +63,10 @@ class Main implements PluginInterface, EventSubscriberInterface {
      * @return array The event names to listen to
      */
     public static function getSubscribedEvents() {
-        $result = array();
+        $result = [ ];
         /* subscribe to all available events  */
         foreach(Config::getEventsAvailable() as $one) {
-            $result[ $one ] = 'onEvent';
+            $result[$one] = 'onEvent';
         }
         return $result;
     }
@@ -80,31 +79,39 @@ class Main implements PluginInterface, EventSubscriberInterface {
      */
     public function activate(Composer $composer, IOInterface $io) {
         $this->composer = $composer;
-        $this->io       = $io;
-        $extra          = $composer->getPackage()->getExtra();
-        if(isset($extra[ self::EXTRA_PARAM ])) {
-            $files = $extra[ self::EXTRA_PARAM ];
+        $this->io = $io;
+        $extra = $composer->getPackage()->getExtra();
+        if(isset($extra[self::EXTRA_PARAM])) {
+            $files = $extra[self::EXTRA_PARAM];
             /* parse configuration files */
             if(!is_array($files)) {
-                $this->configFileNames = array( $files );
+                $this->configFileNames = [ $files ];
             } else {
                 $this->configFileNames = $files;
             }
             foreach($this->configFileNames as $one) {
                 if(file_exists($one)) {
                     $config = new Config($one);
-                    $io->write(__CLASS__ . ": Configuration is read from '$one'.", true);
-                    if(is_null($this->config)) {
-                        $this->config = $config;
+                    if($config->hasRawData()) {
+                        $io->write(__CLASS__ . ": Configuration is read from '$one'.", true);
+                        if(is_null($this->config)) {
+                            $this->config = $config;
+                        } else {
+                            $this->config->merge($config);
+                        }
                     } else {
-                        $this->config->merge($config);
+                        $io->writeError(__CLASS__ . ": Cannot read valid JSON from configuration file '$one'. Plugin will be disabled.", true);
+                        $this->config = null;
+                        break;
                     }
                 } else {
-                    $io->write(__CLASS__ . ": Cannot open configuration file '$one'.", true);
+                    $io->writeError(__CLASS__ . ": Cannot open configuration file '$one'. Plugin will be disabled.", true);
+                    $this->config = null;
+                    break;
                 }
             }
         } else {
-            $io->write(__CLASS__ . ": Extra parameter '" . self::EXTRA_PARAM . "' is empty. Plugin is disabled.", true);
+            $io->writeError(__CLASS__ . ": Extra parameter '" . self::EXTRA_PARAM . "' is empty. Plugin is disabled.", true);
         }
     }
 
@@ -124,7 +131,7 @@ class Main implements PluginInterface, EventSubscriberInterface {
         $name = $event->getName();
         if($this->config) {
             $templates = $this->config->getTemplatesForEvent($name);
-            $hndl      = new TemplateHandler($this->config->getVars(), $this->io);
+            $hndl = new TemplateHandler($this->config->getVars(), $this->io);
             foreach($templates as $one) {
                 /* process one template */
                 $hndl->process($one);
@@ -148,6 +155,6 @@ class Main implements PluginInterface, EventSubscriberInterface {
      */
     public function setIo(IOInterface $io) {
         $this->io = $io;
-	}
+    }
 
 }

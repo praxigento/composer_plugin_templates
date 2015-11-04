@@ -5,6 +5,9 @@ php:
   - hhvm
   - '7'
 
+before_install:
+  - composer install  # install project using PHP Composer
+
 notifications:
   email:
     recipients:

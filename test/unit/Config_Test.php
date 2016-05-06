@@ -28,24 +28,14 @@ use Composer\Script\ScriptEvents;
 
 require_once(__DIR__ . '/../../phpunit.bootstrap.php');
 
-class Config_Test extends \PHPUnit_Framework_TestCase {
+class Config_Test extends \PHPUnit_Framework_TestCase
+{
 
-    public function test_getEventsAvailable() {
-        $events = Config::getEventsAvailable();
-        $this->assertTrue(is_array($events));
-    }
-
-    public function test_getTemplatesForEvent() {
+    public function test_constructor()
+    {
+        /** === Test Data === */
         $FILE = PRJ_ROOT . '/' . Main_Test::FILE_CONFIG_JSON_NVC;
-        $eventName = ScriptEvents::POST_INSTALL_CMD;
-        $config = new Config($FILE);
-        $tmpls = $config->getTemplatesForEvent($eventName);
-        $this->assertTrue(is_array($tmpls));
-        $this->assertEquals(2, count($tmpls));
-    }
-
-    public function test_constructor() {
-        $FILE = PRJ_ROOT . '/' . Main_Test::FILE_CONFIG_JSON_NVC;
+        /** === Call and asserts  === */
         $config = new Config($FILE);
         $this->assertTrue(is_array($config->getVars()));
         $this->assertEquals(5, count($config->getVars()), "Wrong count of vars in the test data.");
@@ -64,5 +54,24 @@ class Config_Test extends \PHPUnit_Framework_TestCase {
         $events = $config->getEventsEnabled();
         $this->assertTrue(is_array($events));
         $this->assertEquals(3, count($events), "Wrong count of total enabled events for all templates.");
+    }
+
+    public function test_getEventsAvailable()
+    {
+        /** === Call and asserts  === */
+        $events = Config::getEventsAvailable();
+        $this->assertTrue(is_array($events));
+    }
+
+    public function test_getTemplatesForEvent()
+    {
+        /** === Test Data === */
+        $FILE = PRJ_ROOT . '/' . Main_Test::FILE_CONFIG_JSON_NVC;
+        $eventName = ScriptEvents::POST_INSTALL_CMD;
+        /** === Call and asserts  === */
+        $config = new Config($FILE);
+        $tmpls = $config->getTemplatesForEvent($eventName);
+        $this->assertTrue(is_array($tmpls));
+        $this->assertEquals(2, count($tmpls));
     }
 }

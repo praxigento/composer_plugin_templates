@@ -29,182 +29,162 @@ use Praxigento\Composer\Plugin\Templates\Handler\FileSaver;
 
 require_once(__DIR__ . '/../../phpunit.bootstrap.php');
 
-class Handler_Test extends \PHPUnit_Framework_TestCase {
+class Handler_Test extends \PHPUnit_Framework_TestCase
+{
     const CLAZZ = 'Praxigento\Composer\Plugin\Templates\Handler';
+    /** @var  \Mockery\MockInterface */
+    private $mIo;
+    /** @var  \Mockery\MockInterface */
+    private $mValidator;
 
-    public function test_create() {
-        $src = FILE_SRC_DUMP;
-        $dst = 'destination_file';
-        /* Prepare test mocks and data */
-        $vars = [ 'var1' => '21' ];
-        $tmpl = new Template();
-        $tmpl->setSource($src);
-        $tmpl->setDestination($dst);
-        //$this->fileSaver->save($tmpl->getDestination(), $content);
-        $mockFileSaver = $this
-            ->getMockBuilder('Praxigento\Composer\Plugin\Templates\Handler\FileSaver')
-            ->getMock();
-        $mockFileSaver
-            ->expects($this->once())
-            ->method('save');
-        //$this->io->write(__CLASS__ . ": <info>Destination file '{$tmpl->getDestination()}' is created from source template '{$tmpl->getSource()}'.</info>");
-        /* $mockIo */
-        $mockIo = $this
-            ->getMockBuilder('Composer\IO\IOInterface')
-            ->getMock();
-        $expected = self::CLAZZ . ": <info>Destination file '$dst' is created from source template '$src'.</info>";
-        $mockIo
-            ->expects($this->once())
-            ->method('write')
-            ->with($expected);
-        /* Create object and perform testing action. */
-        $proc = new Handler($vars, $mockIo, $mockFileSaver);
-        $proc->process($tmpl);
+    protected function setUp()
+    {
+        parent::setUp();
+        /** create mocks */
+        $this->mValidator = \Mockery::mock(\Praxigento\Composer\Plugin\Templates\Handler\ConditionValidator::class);
+        $this->mIo = \Mockery::mock(\Composer\IO\IOInterface::class);
+        /** common setup for mocks */
+        $this->mIo->shouldReceive('write');
     }
 
-    public function test_srcNotExists() {
-        /* Prepare test mocks and data */
-        $src = 'file_is_not_exists';
-        $mockIo = $this
-            ->getMockBuilder('Composer\IO\IOInterface')
-            ->getMock();
-        $expected = self::CLAZZ . ": <error>Cannot open source template ($src).</error>";
-        $mockIo
-            ->expects($this->once())
-            ->method('writeError')
-            ->with($expected);
-        $vars = [ 'var1' => '21' ];
-        $tmpl = new Template();
-        $tmpl->setSource($src);
-        /* Create object and perform testing action. */
-        $proc = new Handler($vars, $mockIo);
-        $proc->process($tmpl);
-    }
-
-    public function test_dstExists_withRewrite() {
-        /* Prepare test mocks and data */
+    public function test_condition_invalid()
+    {
+        /** === Test Data === */
         $src = FILE_SRC_DUMP;
         $dst = FILE_DST_DUMP;
-        $saver = new FileSaver();
-        $saver->save($dst, 'content');
-        $mockIo = $this
-            ->getMockBuilder('Composer\IO\IOInterface')
-            ->getMock();
-        $expected = self::CLAZZ . ": <info>Destination file '$dst' is created from source template '$src'.</info>";
-        $mockIo
-            ->expects($this->once())
-            ->method('write')
-            ->with($expected);
-        //$this->fileSaver->save($tmpl->getDestination(), $content);
-        $mockFileSaver = $this
-            ->getMockBuilder('Praxigento\Composer\Plugin\Templates\Handler\FileSaver')
-            ->getMock();
-        $mockFileSaver
-            ->expects($this->once())
-            ->method('save');
         $tmpl = new Template();
         $tmpl->setSource($src);
         $tmpl->setDestination($dst);
         $tmpl->setCanRewrite(true);
-        /* Create object and perform testing action. */
-        $proc = new Handler([ ], $mockIo, $mockFileSaver);
+        $tmpl->setCondition(new Condition());
+        /** === Setup Mocks === */
+        //($this->conditionValidator->isValid($tmpl->getCondition(), $this->vars))
+        $this->mValidator
+            ->shouldReceive('isValid')->once()
+            ->andReturn(false);
+        $expected = self::CLAZZ . ": <comment>Skip processing of the template ($src) because condition (\${}) is 'false'.</comment>";
+        $this->mIo
+            ->shouldReceive('write')->once()
+            ->with($expected);
+        /** === Call and asserts  === */
+        $proc = new Handler([], $this->mIo, null, $this->mValidator);
+        $proc->process($tmpl);
+    }
+
+    public function test_condition_valid()
+    {
+        /** === Test Data === */
+        $src = FILE_SRC_DUMP;
+        $dst = FILE_DST_DUMP;
+        $tmpl = new Template();
+        $tmpl->setSource($src);
+        $tmpl->setDestination($dst);
+        $tmpl->setCanRewrite(true);
+        $tmpl->setCondition(new Condition());
+        /** === Setup Mocks === */
+        //($this->conditionValidator->isValid($tmpl->getCondition(), $this->vars))
+        $this->mValidator
+            ->shouldReceive('isValid')->once()
+            ->andReturn(true);
+        //$this->fileSaver->save($tmpl->getDestination(), $content);
+        $mFileSaver = \Mockery::mock(\Praxigento\Composer\Plugin\Templates\Handler\FileSaver::class);
+        $mFileSaver
+            ->shouldReceive('save')->once();
+        $expected = self::CLAZZ . ": <info>Destination file '$dst' is created from source template '$src'.</info>";
+        $this->mIo
+            ->shouldReceive('write')->once()
+            ->with($expected);
+        /** === Call and asserts  === */
+        $proc = new Handler([], $this->mIo, $mFileSaver, $this->mValidator);
+        $proc->process($tmpl);
+    }
+
+    public function test_create()
+    {
+        /** === Test Data === */
+        $src = FILE_SRC_DUMP;
+        $dst = 'destination_file';
+        $vars = ['var1' => '21'];
+        $tmpl = new Template();
+        $tmpl->setSource($src);
+        $tmpl->setDestination($dst);
+        /** === Setup Mocks === */
+        //$this->fileSaver->save($tmpl->getDestination(), $content);
+        $mFileSaver = \Mockery::mock(\Praxigento\Composer\Plugin\Templates\Handler\FileSaver::class);
+        $mFileSaver
+            ->shouldReceive('save')->once();
+        //$this->io->write(__CLASS__ . ": <info>Destination file '{$tmpl->getDestination()}' is created from source template '{$tmpl->getSource()}'.</info>");
+        $expected = self::CLAZZ . ": <info>Destination file '$dst' is created from source template '$src'.</info>";
+        $this->mIo
+            ->shouldReceive('write')->once()
+            ->with($expected);
+        /** === Call and asserts  === */
+        $proc = new Handler($vars, $this->mIo, $mFileSaver);
+        $proc->process($tmpl);
+    }
+
+    public function test_dstExists_withRewrite()
+    {
+        /** === Test Data === */
+        $src = FILE_SRC_DUMP;
+        $dst = FILE_DST_DUMP;
+        $saver = new FileSaver();
+        $saver->save($dst, 'content');
+        $tmpl = new Template();
+        $tmpl->setSource($src);
+        $tmpl->setDestination($dst);
+        $tmpl->setCanRewrite(true);
+        /** === Setup Mocks === */
+        $expected = self::CLAZZ . ": <info>Destination file '$dst' is created from source template '$src'.</info>";
+        $this->mIo
+            ->shouldReceive('write')->once()
+            ->with($expected);
+        //$this->fileSaver->save($tmpl->getDestination(), $content);
+        $mFileSaver = \Mockery::mock(\Praxigento\Composer\Plugin\Templates\Handler\FileSaver::class);
+        $mFileSaver
+            ->shouldReceive('save')->once();
+        /** === Call and asserts  === */
+        $proc = new Handler([], $this->mIo, $mFileSaver);
         $proc->process($tmpl);
         unlink(FILE_DST_DUMP);
     }
 
-    public function test_dstExists_withoutRewrite() {
-        /* Prepare test mocks and data */
+    public function test_dstExists_withoutRewrite()
+    {
+        /** === Test Data === */
         $src = FILE_SRC_DUMP;
         $dst = FILE_DST_DUMP;
         $saver = new FileSaver();
         $saver->save($dst, 'content');
-        $mockIo = $this
-            ->getMockBuilder('Composer\IO\IOInterface')
-            ->getMock();
-        $expected = self::CLAZZ . ": <comment>Destination file '$dst' is already exist and cannot be rewrote (rewrite = false).</comment>";
-        $mockIo
-            ->expects($this->once())
-            ->method('write')
-            ->with($expected);
         $tmpl = new Template();
         $tmpl->setSource($src);
         $tmpl->setDestination($dst);
         $tmpl->setCanRewrite(false);
-        /* Create object and perform testing action. */
-        $proc = new Handler([ ], $mockIo);
+        /** === Setup Mocks === */
+        $expected = self::CLAZZ . ": <comment>Destination file '$dst' is already exist and cannot be rewrote (rewrite = false).</comment>";
+        $this->mIo
+            ->shouldReceive('write')->once()
+            ->with($expected);
+        /** === Call and asserts  === */
+        $proc = new Handler([], $this->mIo);
         $proc->process($tmpl);
         unlink($dst);
     }
 
-    public function test_condition_valid() {
-        /* Prepare test mocks and data */
-        $src = FILE_SRC_DUMP;
-        $dst = FILE_DST_DUMP;
-        //($this->conditionValidator->isValid($tmpl->getCondition(), $this->vars))
-        $mockValidator = $this
-            ->getMockBuilder('Praxigento\Composer\Plugin\Templates\Handler\ConditionValidator')
-            ->getMock();
-        $mockValidator
-            ->expects($this->once())
-            ->method('isValid')
-            ->willReturn(true);
-        //$this->fileSaver->save($tmpl->getDestination(), $content);
-        $mockFileSaver = $this
-            ->getMockBuilder('Praxigento\Composer\Plugin\Templates\Handler\FileSaver')
-            ->getMock();
-        $mockFileSaver
-            ->expects($this->once())
-            ->method('save');
-
-        // IO
-        $mockIo = $this
-            ->getMockBuilder('Composer\IO\IOInterface')
-            ->getMock();
-        $expected = self::CLAZZ . ": <info>Destination file '$dst' is created from source template '$src'.</info>";
-        $mockIo
-            ->expects($this->once())
-            ->method('write')
-            ->with($expected);
-        // template
+    public function test_srcNotExists()
+    {
+        /** === Test Data === */
+        $src = 'file_is_not_exists';
+        $vars = ['var1' => '21'];
         $tmpl = new Template();
         $tmpl->setSource($src);
-        $tmpl->setDestination($dst);
-        $tmpl->setCanRewrite(true);
-        $tmpl->setCondition(new Condition());
-        /* Create object and perform testing action. */
-        $proc = new Handler([ ], $mockIo, $mockFileSaver, $mockValidator);
-        $proc->process($tmpl);
-    }
-
-    public function test_condition_invalid() {
-        /* Prepare test mocks and data */
-        $src = FILE_SRC_DUMP;
-        $dst = FILE_DST_DUMP;
-        //($this->conditionValidator->isValid($tmpl->getCondition(), $this->vars))
-        $mockValidator = $this
-            ->getMockBuilder('Praxigento\Composer\Plugin\Templates\Handler\ConditionValidator')
-            ->getMock();
-        $mockValidator
-            ->expects($this->once())
-            ->method('isValid')
-            ->willReturn(false);
-        // IO
-        $mockIo = $this
-            ->getMockBuilder('Composer\IO\IOInterface')
-            ->getMock();
-        $expected = self::CLAZZ . ": <comment>Skip processing of the template ($src) because condition (\${}) is 'false'.</comment>";
-        $mockIo
-            ->expects($this->once())
-            ->method('write')
+        /** === Setup Mocks === */
+        $expected = self::CLAZZ . ": <error>Cannot open source template ($src).</error>";
+        $this->mIo
+            ->shouldReceive('writeError')->once()
             ->with($expected);
-        // template
-        $tmpl = new Template();
-        $tmpl->setSource($src);
-        $tmpl->setDestination($dst);
-        $tmpl->setCanRewrite(true);
-        $tmpl->setCondition(new Condition());
-        /* Create object and perform testing action. */
-        $proc = new Handler([ ], $mockIo, null, $mockValidator);
+        /** === Call and asserts  === */
+        $proc = new Handler($vars, $this->mIo);
         $proc->process($tmpl);
     }
 }

@@ -25,14 +25,16 @@
  */
 namespace Praxigento\Composer\Plugin\Templates;
 
+
 use Composer\Composer;
 use Composer\EventDispatcher\EventSubscriberInterface;
+use Composer\Installer\PackageEvent;
 use Composer\IO\IOInterface;
 use Composer\Plugin\PluginInterface;
-use Composer\Script\Event;
 use Praxigento\Composer\Plugin\Templates\Config;
 
-class Main implements PluginInterface, EventSubscriberInterface {
+class Main implements PluginInterface, EventSubscriberInterface
+{
     /** Entry name for plugin config file in 'extra' section of composer.json */
     const EXTRA_PARAM = 'praxigento_templates_config';
     /** @var Composer */
@@ -43,6 +45,65 @@ class Main implements PluginInterface, EventSubscriberInterface {
     private $configFileNames;
     /** @var IOInterface */
     private $io;
+
+    /**
+     * Apply plugin modifications to composer
+     *
+     * See http://symfony.com/doc/current/components/console/introduction.html for more about $io
+     *      Available tags are: [info|comment|question|error]
+     *
+     * @param Composer $composer
+     * @param IOInterface $io
+     */
+    public function activate(Composer $composer, IOInterface $io)
+    {
+        $this->composer = $composer;
+        $this->io = $io;
+        $extra = $composer->getPackage()->getExtra();
+        if (isset($extra[self::EXTRA_PARAM])) {
+            $files = $extra[self::EXTRA_PARAM];
+            /* parse configuration files */
+            if (!is_array($files)) {
+                $this->configFileNames = [$files];
+            } else {
+                $this->configFileNames = $files;
+            }
+            foreach ($this->configFileNames as $one) {
+                if (file_exists($one)) {
+                    $config = new Config($one);
+                    if ($config->hasRawData()) {
+                        $io->write(__CLASS__ . ": <info>Configuration is read from '$one'.</info>", true);
+                        if (is_null($this->config)) {
+                            $this->config = $config;
+                        } else {
+                            $this->config->merge($config);
+                        }
+                    } else {
+                        $io->writeError(__CLASS__ . ": <error>Cannot read valid JSON from configuration file '$one'. Plugin will be disabled.</error>",
+                            true);
+                        $this->config = null;
+                        break;
+                    }
+                } else {
+                    $io->writeError(__CLASS__ . ": <error>Cannot open configuration file '$one'. Plugin will be disabled.</error>",
+                        true);
+                    $this->config = null;
+                    break;
+                }
+            }
+        } else {
+            $io->writeError(__CLASS__ . ": <error>Extra parameter '" . self::EXTRA_PARAM . "' is empty. Plugin is disabled.</error>",
+                true);
+        }
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getConfigFileNames()
+    {
+        return $this->configFileNames;
+    }
 
     /**
      * Returns an array of event names this subscriber wants to listen to.
@@ -62,80 +123,28 @@ class Main implements PluginInterface, EventSubscriberInterface {
      *
      * @return array The event names to listen to
      */
-    public static function getSubscribedEvents() {
-        $result = [ ];
+    public static function getSubscribedEvents()
+    {
+        $result = [];
         /* subscribe to all available events  */
-        foreach(Config::getEventsAvailable() as $one) {
+        foreach (Config::getEventsAvailable() as $one) {
             $result[$one] = 'onEvent';
         }
         return $result;
     }
 
     /**
-     * Apply plugin modifications to composer
-     *
-     * See http://symfony.com/doc/current/components/console/introduction.html for more about $io
-     *      Available tags are: [info|comment|question|error]
-     *
-     * @param Composer    $composer
-     * @param IOInterface $io
-     */
-    public function activate(Composer $composer, IOInterface $io) {
-        $this->composer = $composer;
-        $this->io = $io;
-        $extra = $composer->getPackage()->getExtra();
-        if(isset($extra[self::EXTRA_PARAM])) {
-            $files = $extra[self::EXTRA_PARAM];
-            /* parse configuration files */
-            if(!is_array($files)) {
-                $this->configFileNames = [ $files ];
-            } else {
-                $this->configFileNames = $files;
-            }
-            foreach($this->configFileNames as $one) {
-                if(file_exists($one)) {
-                    $config = new Config($one);
-                    if($config->hasRawData()) {
-                        $io->write(__CLASS__ . ": <info>Configuration is read from '$one'.</info>", true);
-                        if(is_null($this->config)) {
-                            $this->config = $config;
-                        } else {
-                            $this->config->merge($config);
-                        }
-                    } else {
-                        $io->writeError(__CLASS__ . ": <error>Cannot read valid JSON from configuration file '$one'. Plugin will be disabled.</error>", true);
-                        $this->config = null;
-                        break;
-                    }
-                } else {
-                    $io->writeError(__CLASS__ . ": <error>Cannot open configuration file '$one'. Plugin will be disabled.</error>", true);
-                    $this->config = null;
-                    break;
-                }
-            }
-        } else {
-            $io->writeError(__CLASS__ . ": <error>Extra parameter '" . self::EXTRA_PARAM . "' is empty. Plugin is disabled.</error>", true);
-        }
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getConfigFileNames() {
-        return $this->configFileNames;
-    }
-
-    /**
      * Common handler for all events.
      *
-     * @param Event $event
+     * @param PackageEvent $event
      */
-    public function onEvent(Event $event) {
+    public function onEvent(PackageEvent $event)
+    {
         $name = $event->getName();
-        if($this->config) {
+        if ($this->config) {
             $templates = $this->config->getTemplatesForEvent($name);
             $hndl = new Handler($this->config->getVars(), $this->io);
-            foreach($templates as $one) {
+            foreach ($templates as $one) {
                 /* process one template */
                 $hndl->process($one);
             }
@@ -147,7 +156,8 @@ class Main implements PluginInterface, EventSubscriberInterface {
      *
      * @param Config $config
      */
-    public function setConfig($config) {
+    public function setConfig($config)
+    {
         $this->config = $config;
     }
 
@@ -156,7 +166,8 @@ class Main implements PluginInterface, EventSubscriberInterface {
      *
      * @param IOInterface $io
      */
-    public function setIo(IOInterface $io) {
+    public function setIo(IOInterface $io)
+    {
         $this->io = $io;
     }
 

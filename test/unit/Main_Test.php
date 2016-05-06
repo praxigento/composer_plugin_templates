@@ -24,138 +24,151 @@
 
 namespace Praxigento\Composer\Plugin\Templates;
 
-use Composer\Composer;
-use Composer\IO\IOInterface;
 use Composer\Script\ScriptEvents;
 
 require_once(__DIR__ . '/../../phpunit.bootstrap.php');
 
-class Main_Test extends \PHPUnit_Framework_TestCase {
+class Main_Test extends \PHPUnit_Framework_TestCase
+{
+    const CLAZZ = 'Praxigento\Composer\Plugin\Templates\Main';
+    const FILE_CONFIG_JSON_INVALID = 'test/data/invalid.json';
     const FILE_CONFIG_JSON_NVC = 'test/data/templates_not_under_vc.json';
     const FILE_CONFIG_JSON_VC = 'test/data/templates_under_vc.json';
-    const FILE_CONFIG_JSON_INVALID = 'test/data/invalid.json';
     const FILE_TMPL_DST = 'test/bin/dump_db/dump.sh';
     const FILE_TMPL_SRC = 'test/tmpl/dump.sh';
-    const CLAZZ = 'Praxigento\Composer\Plugin\Templates\Main';
+    /** @var  \Mockery\MockInterface */
+    private $mComposer;
+    /** @var  \Mockery\MockInterface */
+    private $mIo;
+    /** @var  \Mockery\MockInterface */
+    private $mPackage;
+    /** @var  Main */
+    private $obj;
 
-    public function test_activate_withExtra() {
-        $FILENAME = PRJ_ROOT . '/' . self::FILE_CONFIG_JSON_NVC;
-        /** @var  $package Composer\Package\RootPackageInterface */
-        $package = $this->getMockBuilder('Composer\Package\RootPackageInterface')->getMock();
-        $package->method('getExtra')->willReturn([ Main::EXTRA_PARAM => $FILENAME ]);
-        /** @var  $stub Composer */
-        $composer = $this->getMockBuilder('Composer\Composer')->getMock();
-        $composer->method('getPackage')->willReturn($package);
-        /** @var  $io IOInterface */
-        $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
-        $plugin = new Main();
-        $plugin->activate($composer, $io);
-        $this->assertEquals($FILENAME, $plugin->getConfigFileNames()[0]);
+    protected function setUp()
+    {
+        parent::setUp();
+        /** create mocks */
+        $this->mComposer = \Mockery::mock(\Composer\Composer::class);
+        $this->mPackage = \Mockery::mock(\Composer\Package\RootPackageInterface::class);
+        $this->mIo = \Mockery::mock(\Composer\IO\IOInterface::class);
+        /** common setup for mocks */
+        $this->mComposer
+            ->shouldReceive('getPackage')
+            ->andReturn($this->mPackage);
+        $this->mIo->shouldReceive('write');
+        /** create object to test */
+        $this->obj = new Main();
     }
 
-    public function test_activate_withExtra_asArray() {
+
+    public function test_activate_withExtra()
+    {
+        /** === Test Data === */
+        $FILENAME = PRJ_ROOT . '/' . self::FILE_CONFIG_JSON_NVC;
+        /** === Setup Mocks === */
+        $this->mPackage
+            ->shouldReceive('getExtra')
+            ->andReturn([Main::EXTRA_PARAM => $FILENAME]);
+        /** === Call and asserts  === */
+        $this->obj->activate($this->mComposer, $this->mIo);
+        $this->assertEquals($FILENAME, $this->obj->getConfigFileNames()[0]);
+    }
+
+    public function test_activate_withExtra_asArray()
+    {
+        /** === Test Data === */
         $FILENAME_1 = PRJ_ROOT . '/' . self::FILE_CONFIG_JSON_NVC;
         $FILENAME_2 = PRJ_ROOT . '/' . self::FILE_CONFIG_JSON_VC;
-        /** @var  $package Composer\Package\RootPackageInterface */
-        $package = $this->getMockBuilder('Composer\Package\RootPackageInterface')->getMock();
-        $package->method('getExtra')->willReturn([ Main::EXTRA_PARAM => [ $FILENAME_1, $FILENAME_2 ] ]);
-        /** @var  $stub Composer */
-        $composer = $this->getMockBuilder('Composer\Composer')->getMock();
-        $composer->method('getPackage')->willReturn($package);
-        /** @var  $io IOInterface */
-        $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
-        $plugin = new Main();
-        $plugin->activate($composer, $io);
-        $this->assertEquals($FILENAME_1, $plugin->getConfigFileNames()[0]);
-        $this->assertEquals($FILENAME_2, $plugin->getConfigFileNames()[1]);
+        /** === Setup Mocks === */
+        $this->mPackage
+            ->shouldReceive('getExtra')
+            ->andReturn([Main::EXTRA_PARAM => [$FILENAME_1, $FILENAME_2]]);
+        /** === Call and asserts  === */
+        $this->obj->activate($this->mComposer, $this->mIo);
+        $this->assertEquals($FILENAME_1, $this->obj->getConfigFileNames()[0]);
+        $this->assertEquals($FILENAME_2, $this->obj->getConfigFileNames()[1]);
     }
 
-    public function test_activate_withExtra_wrongFile() {
+    public function test_activate_withExtra_wrongFile()
+    {
+        /** === Test Data === */
         $FILENAME = PRJ_ROOT . '/' . self::FILE_CONFIG_JSON_NVC;
-        /** @var  $package Composer\Package\RootPackageInterface */
-        $package = $this->getMockBuilder('Composer\Package\RootPackageInterface')->getMock();
-        $package->method('getExtra')->willReturn([ Main::EXTRA_PARAM => $FILENAME . '_missedFile' ]);
-        /** @var  $stub Composer */
-        $composer = $this->getMockBuilder('Composer\Composer')->getMock();
-        $composer->method('getPackage')->willReturn($package);
-        /** @var  $io IOInterface */
-        $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
-        $io->expects($this->once())->method('writeError');
-        $plugin = new Main();
-        $plugin->activate($composer, $io);
+        /** === Setup Mocks === */
+        $this->mPackage
+            ->shouldReceive('getExtra')
+            ->andReturn([Main::EXTRA_PARAM => $FILENAME . '_missedFile']);
+        $this->mIo
+            ->shouldReceive('writeError')->once();
+        /** === Call and asserts  === */
+        $this->obj->activate($this->mComposer, $this->mIo);
     }
 
-    public function test_activate_withoutExtra() {
-        $plugin = new Main();
-        /** @var  $package Composer\Package\RootPackageInterface */
-        $package = $this->getMockBuilder('Composer\Package\RootPackageInterface')->getMock();
-        $package->method('getExtra')->willReturn([ ]);
-        /** @var  $stub Composer */
-        $composer = $this->getMockBuilder('Composer\Composer')->getMock();
-        $composer->method('getPackage')->willReturn($package);
-        /** @var  $io IOInterface */
-        $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
-        $plugin->activate($composer, $io);
-        $this->assertNull($plugin->getConfigFileNames());
+    public function test_activate_withInvalidJson()
+    {
+        /** === Test Data === */
+        $FILENAME = PRJ_ROOT . '/' . self::FILE_CONFIG_JSON_INVALID;
+        /** === Setup Mocks === */
+        $this->mPackage
+            ->shouldReceive('getExtra')
+            ->andReturn([Main::EXTRA_PARAM => $FILENAME]);
+        // $io->writeError(__CLASS__ . ": <error>Cannot read valid JSON from configuration file '$one'. Plugin will be disabled.</error>", true);
+        $expected = self::CLAZZ . ": <error>Cannot read valid JSON from configuration file '$FILENAME'. Plugin will be disabled.</error>";
+        $this->mIo
+            ->shouldReceive('writeError')->once()
+            ->with($expected, true);
+        /** === Call and asserts  === */
+        $this->obj->activate($this->mComposer, $this->mIo);
     }
 
-    public function test_getSubscribedEvents() {
+    public function test_activate_withoutExtra()
+    {
+        /** === Test Data === */
+        /** === Setup Mocks === */
+        $this->mPackage
+            ->shouldReceive('getExtra')
+            ->andReturn([]);
+        $this->mIo
+            ->shouldReceive('writeError')->once();
+        /** === Call and asserts  === */
+        $this->obj->activate($this->mComposer, $this->mIo);
+        $this->assertNull($this->obj->getConfigFileNames());
+    }
+
+    public function test_getSubscribedEvents()
+    {
+        /** === Call and asserts  === */
         $events = Main::getSubscribedEvents();
-        $refl = new \ReflectionClass('\Composer\Script\ScriptEvents');
-        foreach($refl->getConstants() as $one) {
+        $refl = new \ReflectionClass(\Composer\Script\ScriptEvents::class);
+        foreach ($refl->getConstants() as $one) {
             $this->assertArrayHasKey(ScriptEvents::POST_INSTALL_CMD, $events);
         }
     }
 
-    public function test_activate_withInvalidJson() {
-        $FILENAME = PRJ_ROOT . '/' . self::FILE_CONFIG_JSON_INVALID;
-        $plugin = new Main();
-        /** @var  $mockPkg Composer\Package\RootPackageInterface */
-        $mockPkg = $this
-            ->getMockBuilder('Composer\Package\RootPackageInterface')
-            ->getMock();
-        $mockPkg
-            ->method('getExtra')
-            ->willReturn([ Main::EXTRA_PARAM => $FILENAME ]);
-        /** @var  $stub Composer */
-        $mockComposer = $this
-            ->getMockBuilder('Composer\Composer')
-            ->getMock();
-        $mockComposer
-            ->method('getPackage')
-            ->willReturn($mockPkg);
-        // $io->writeError(__CLASS__ . ": <error>Cannot read valid JSON from configuration file '$one'. Plugin will be disabled.</error>", true);
-        $mockIo = $this
-            ->getMockBuilder('Composer\IO\IOInterface')
-            ->getMock();
-        $expected = self::CLAZZ . ": <error>Cannot read valid JSON from configuration file '$FILENAME'. Plugin will be disabled.</error>";
-        $mockIo
-            ->expects($this->once())
-            ->method('writeError')
-            ->with($expected);
-        $plugin->activate($mockComposer, $mockIo);
-    }
-
-    public function test_onEvent() {
+    public function test_onEvent()
+    {
+        /** === Test Data === */
         $eventName = ScriptEvents::POST_INSTALL_CMD;
         $template = new Config\Template();
         $template->setSource(self::FILE_TMPL_SRC);
         $template->setDestination(self::FILE_TMPL_DST);
-        $events = [ $eventName ];
+        $events = [$eventName];
         $template->setEvents($events);
-        $config = $this->getMockBuilder('\Praxigento\Composer\Plugin\Templates\Config')->disableOriginalConstructor()->getMock();
-        $config->method('getTemplatesForEvent')->with($eventName)->willReturn([ $template ]);
-        $config = new Config(PRJ_ROOT . '/' . self::FILE_CONFIG_JSON_NVC);
-        /** @var  $io IOInterface */
-        $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
-        /** @var  $event Composer\Script\CommandEvent */
-        $event = $this->getMockBuilder('\Composer\Script\CommandEvent')->disableOriginalConstructor()->getMock();
-        $event->method('getName')->willReturn($eventName);
-        /** @var  $plugin Main */
-        $plugin = new Main();
-        $plugin->setConfig($config);
-        $plugin->setIo($io);
-        $plugin->onEvent($event);
+        /** === Setup Mocks === */
+        $mConfig = \Mockery::mock(
+            \Praxigento\Composer\Plugin\Templates\Config::class,
+            [PRJ_ROOT . '/' . self::FILE_CONFIG_JSON_NVC]
+        );
+        $mConfig->shouldReceive('getTemplatesForEvent')->with($eventName)->andReturn([$template]);
+        $mConfig->shouldReceive('getVars')->andReturn([]);
+        $mEvent = \Mockery::mock(\Composer\Installer\PackageEvent::class);
+        $mEvent->shouldReceive('getName')->andReturn($eventName);
+        $this->mIo
+            ->shouldReceive('writeError');
+        /** === Call and asserts  === */
+        $this->obj->setConfig($mConfig);
+        $this->obj->setIo($this->mIo);
+        $this->obj->onEvent($mEvent);
     }
 
 }

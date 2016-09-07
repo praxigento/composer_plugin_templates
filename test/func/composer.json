@@ -1,5 +1,25 @@
 {
+  "name": "praxigento/composer_plugin_templates_test_func",
+  "description": "Development environment for this project.",
+  "type": "project",
+  "homepage": "https://github.com/praxigento/composer_plugin_templates",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Alex Gusev",
+      "email": "flancer64@gmail.com"
+    }
+  ],
   "require": {
+    "php": ">=5.5",
     "praxigento/composer_plugin_templates": "*"
+  },
+  "minimum-stability": "dev",
+  "repositories": {},
+  "extra": {
+    "praxigento_templates_config": [
+      "./templates.cfg.json",
+      "./templates.vars.json"
+    ]
   }
 }

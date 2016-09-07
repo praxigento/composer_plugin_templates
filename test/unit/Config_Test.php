@@ -24,8 +24,6 @@
 
 namespace Praxigento\Composer\Plugin\Templates;
 
-use Composer\Script\ScriptEvents;
-
 require_once(__DIR__ . '/../../phpunit.bootstrap.php');
 
 class Config_Test extends \PHPUnit_Framework_TestCase
@@ -41,37 +39,17 @@ class Config_Test extends \PHPUnit_Framework_TestCase
         $this->assertEquals(5, count($config->getVars()), "Wrong count of vars in the test data.");
         $tmpls = $config->getTemplates();
         $this->assertTrue(is_array($tmpls));
-        $this->assertEquals(3, count($tmpls), "Wrong count of valid templates in the test data.");
-        /** @var $t1 Config\Template */
-        $t1 = $tmpls[0];
-        $this->assertTrue(is_array($t1->getEvents()));
-        $this->assertEquals(1, count($t1->getEvents()), "Wrong count of events for 'local.xml' template.");
-        /** @var $t2 Config\Template */
-        $t2 = $tmpls[1];
-        $this->assertTrue(is_array($t2->getEvents()));
-        $this->assertEquals(2, count($t2->getEvents()), "Wrong count of events for 'dump.sh' template.");
-        /* validate events enabled */
-        $events = $config->getEventsEnabled();
-        $this->assertTrue(is_array($events));
-        $this->assertEquals(3, count($events), "Wrong count of total enabled events for all templates.");
+        $this->assertEquals(4, count($tmpls), "Wrong count of valid templates in the test data.");
     }
 
-    public function test_getEventsAvailable()
-    {
-        /** === Call and asserts  === */
-        $events = Config::getEventsAvailable();
-        $this->assertTrue(is_array($events));
-    }
-
-    public function test_getTemplatesForEvent()
+    public function test_getTemplates()
     {
         /** === Test Data === */
         $FILE = PRJ_ROOT . '/' . Main_Test::FILE_CONFIG_JSON_NVC;
-        $eventName = ScriptEvents::POST_INSTALL_CMD;
         /** === Call and asserts  === */
         $config = new Config($FILE);
-        $tmpls = $config->getTemplatesForEvent($eventName);
+        $tmpls = $config->getTemplates();
         $this->assertTrue(is_array($tmpls));
-        $this->assertEquals(2, count($tmpls));
+        $this->assertEquals(4, count($tmpls));
     }
 }

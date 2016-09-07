@@ -10,46 +10,26 @@
     "local.xml": {
       "src": "test/tmpl/local.xml",
       "dst": "test/mage/app/etc/local.xml",
-      "events": "post-install-cmd",
       "rewrite": true
     },
     "dump.sh": {
       "src": "test/tmpl/dump.sh",
       "dst": "test/bin/dump_db/dump.sh",
-      "rewrite": true,
-      "events": [
-        "post-install-cmd",
-        "post-update-cmd"
-      ]
+      "rewrite": true
     },
     "entry w/o src": {
-      "dst": "dst",
-      "events": [
-        "post-update-cmd"
-      ]
-    },
-    "entry w/o dst": {
-      "src": "src",
-      "events": []
-    },
-    "entry w/o events": {
-      "src": "src",
       "dst": "dst"
     },
-    "entry with empty events array": {
-      "src": "src",
-      "dst": "dst",
-      "events": []
+    "entry w/o dst": {
+      "src": "src"
     },
-    "entry with empty event": {
+    "entry minimal": {
       "src": "src",
-      "dst": "dst",
-      "events": ""
+      "dst": "dst"
     },
     "entry with condition": {
       "src": "src",
       "dst": "dst",
-      "events": ["post-status-cmd"],
       "condition": {
         "var": "DEPLOYMENT_TYPE",
         "operation": "=",

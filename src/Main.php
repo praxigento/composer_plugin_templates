@@ -34,42 +34,6 @@ class Main
     /** Entry name for plugin config file in 'extra' section of composer.json */
     const EXTRA_PARAM = 'praxigento_templates_config';
 
-    /**#@+
-     *
-     * Names of the event handlers (this class' methods).
-     */
-    const HNDL_COMMAND = 'onCommand';
-    const HNDL_INSTALLER = 'onInstaller';
-    const HNDL_PACKAGE = 'onPackage';
-    /**#@- */
-
-    /**
-     * @var array Map events to handlers.
-     */
-    private static $EVENT_HANDLERS = [
-        'pre-install-cmd' => self::HNDL_COMMAND,
-        'post-install-cmd' => self::HNDL_COMMAND,
-        'pre-update-cmd' => self::HNDL_COMMAND,
-        'post-update-cmd' => self::HNDL_COMMAND,
-        'post-status-cmd' => self::HNDL_COMMAND,
-        'pre-archive-cmd' => self::HNDL_COMMAND,
-        'post-archive-cmd' => self::HNDL_COMMAND,
-        'pre-autoload-dump' => self::HNDL_COMMAND,
-        'post-autoload-dump' => self::HNDL_COMMAND,
-        'post-root-package-install' => self::HNDL_COMMAND,
-        'post-create-project-cmd' => self::HNDL_COMMAND,
-        'pre-dependencies-solving' => self::HNDL_INSTALLER,
-        'post-dependencies-solving' => self::HNDL_INSTALLER,
-        'pre-package-install' => self::HNDL_PACKAGE,
-        'post-package-install' => self::HNDL_PACKAGE,
-        'pre-package-update' => self::HNDL_PACKAGE,
-        'post-package-update' => self::HNDL_PACKAGE,
-        'pre-package-uninstall' => self::HNDL_PACKAGE,
-        'post-package-uninstall' => self::HNDL_PACKAGE,
-        'init' => 'onPluginInit',
-        'command' => 'onPluginCommand',
-        'pre-file-download' => 'onPluginPreFileDownload',
-    ];
     /** @var \Composer\Composer */
     private $composer;
     /** @var \Praxigento\Composer\Plugin\Templates\Config */
@@ -78,25 +42,6 @@ class Main
     private $configFileNames;
     /** @var \Composer\IO\IOInterface */
     private $io;
-
-    /**
-     * Common handler for all events.
-     *
-     * @param \Composer\EventDispatcher\Event $event
-     */
-    protected function _onEvent(\Composer\EventDispatcher\Event $event)
-    {
-        $name = $event->getName();
-        if (self::$config) {
-            $templates = self::$config->getTemplatesForEvent($name);
-            $vars = self::$config->getVars();
-            $hndl = new \Praxigento\Composer\Plugin\Templates\Handler($vars, $this->io);
-            foreach ($templates as $one) {
-                /* process one template */
-                $hndl->process($one);
-            }
-        }
-    }
 
     /**
      * Apply plugin modifications to composer
@@ -125,7 +70,7 @@ class Main
             foreach ($this->configFileNames as $one) {
                 if (file_exists($one)) {
                     $config = new \Praxigento\Composer\Plugin\Templates\Config($one);
-                    if ($config->hasRawData()) {
+                    if ($config->hasData()) {
                         $io->write(__CLASS__ . ": <info>Configuration is read from '$one'.</info>", true);
                         if (is_null(self::$config)) {
                             self::$config = $config;
@@ -179,52 +124,29 @@ class Main
      */
     public static function getSubscribedEvents()
     {
-        $result = [];
-        /* subscribe to all available events  */
-        $events = self::$config->getEventsEnabled();
-        foreach ($events as $one) {
-            if (isset(self::$EVENT_HANDLERS[$one])) {
-                $result[$one] = self::$EVENT_HANDLERS[$one];
-            }
-        }
+        $result = ['command' => 'onCommand'];
         return $result;
     }
 
+    /**
+     * Process templates on every command.
+     *
+     * @param \Composer\Plugin\CommandEvent $event
+     */
     public function onCommand(
-        \Composer\Script\Event $event
-    ) {
-        $this->_onEvent($event);
-    }
-
-    public function onInstaller(
-        \Composer\Installer\InstallerEvent $event
-    ) {
-        $this->_onEvent($event);
-    }
-
-    public function onPackage(
-        \Composer\Installer\PackageEvent $event
-    ) {
-        $this->_onEvent($event);
-    }
-
-    public function onPluginCommand(
         \Composer\Plugin\CommandEvent $event
     ) {
-        $this->_onEvent($event);
+        if (self::$config) {
+            $templates = self::$config->getTemplates();
+            $vars = self::$config->getVars();
+            $hndl = new \Praxigento\Composer\Plugin\Templates\Handler($vars, $this->io);
+            foreach ($templates as $one) {
+                /* process one template */
+                $hndl->process($one);
+            }
+        }
     }
 
-    public function onPluginInit(
-        \Composer\EventDispatcher\Event $event
-    ) {
-        $this->_onEvent($event);
-    }
-
-    public function onPluginPreFileDownload(
-        \Composer\Plugin\PreFileDownloadEvent $event
-    ) {
-        $this->_onEvent($event);
-    }
 
     /**
      * Setup attribute on tests.

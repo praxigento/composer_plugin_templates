@@ -27,7 +27,8 @@
 namespace Praxigento\Composer\Plugin\Templates\Config;
 
 
-class Template {
+class Template
+{
     /**
      * Flag to rewrite existing destination.
      * @var  boolean
@@ -44,11 +45,6 @@ class Template {
      */
     private $destination;
     /**
-     * Array of the events to perform processing on.
-     * @var array
-     */
-    private $events;
-    /**
      * Path to source template.
      * @var  string
      */
@@ -57,70 +53,64 @@ class Template {
     /**
      * @return Condition
      */
-    public function getCondition() {
+    public function getCondition()
+    {
         return $this->condition;
     }
 
     /**
-     * @param Condition $val
-     */
-    public function setCondition($val) {
-        $this->condition = $val;
-    }
-
-    /**
      * @return string
      */
-    public function getDestination() {
+    public function getDestination()
+    {
         return $this->destination;
     }
 
     /**
-     * @param string $val
-     */
-    public function setDestination($val) {
-        $this->destination = $val;
-    }
-
-    /**
-     * @return array
-     */
-    public function getEvents() {
-        return $this->events;
-    }
-
-    /**
-     * @param array $val
-     */
-    public function setEvents($val) {
-        $this->events = $val;
-    }
-
-    /**
      * @return string
      */
-    public function getSource() {
+    public function getSource()
+    {
         return $this->source;
-    }
-
-    /**
-     * @param string $val
-     */
-    public function setSource($val) {
-        $this->source = $val;
     }
 
     /**
      * @return boolean
      */
-    public function isCanRewrite() {
+    public function isCanRewrite()
+    {
         return $this->canRewrite;
     }
 
     /**
      * @param boolean $val
      */
-    public function setCanRewrite($val) {
+    public function setCanRewrite($val)
+    {
         $this->canRewrite = filter_var($val, FILTER_VALIDATE_BOOLEAN);
+    }
+
+    /**
+     * @param Condition $val
+     */
+    public function setCondition($val)
+    {
+        $this->condition = $val;
+    }
+
+    /**
+     * @param string $val
+     */
+    public function setDestination($val)
+    {
+        $this->destination = $val;
+    }
+
+    /**
+     * @param string $val
+     */
+    public function setSource($val)
+    {
+        $this->source = $val;
     }
 }

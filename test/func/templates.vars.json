@@ -1,3 +1,5 @@
 {
-  "vars":{}
+  "vars": {
+    "MY_VAR": "some value"
+  }
 }

@@ -2,31 +2,7 @@
   "templates": {
     "all_events": {
       "src": "",
-      "dst": "",
-      "events": [
-        "pre-install-cmd",
-        "post-install-cmd",
-        "pre-update-cmd",
-        "post-update-cmd",
-        "post-status-cmd",
-        "pre-archive-cmd",
-        "post-archive-cmd",
-        "pre-autoload-dump",
-        "post-autoload-dump",
-        "post-root-package-install",
-        "post-create-project-cmd",
-        "pre-dependencies-solving",
-        "post-dependencies-solving",
-        "pre-package-install",
-        "post-package-install",
-        "pre-package-update",
-        "post-package-update",
-        "pre-package-uninstall",
-        "post-package-uninstall",
-        "init",
-        "command",
-        "pre-file-download"
-      ]
+      "dst": ""
     }
   }
 }

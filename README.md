@@ -117,7 +117,7 @@ Set of the templates to be processed on events:
 Labels (`local.xml` & `dump.sh`) are for reference only.
 
 * *src*: _(required)_ path to template file;
-* *dst*: _(required)_path to result file (where placeholders are replaced by its values);
+* *dst*: _(required)_ path to result file (where placeholders are replaced by its values);
 * *rewrite*: 'true' to rewrite destination file if exists ('false' by default);
 * *condition*: simple condition to process this template file;
     * *var*: name of the variable for left part of the condition;

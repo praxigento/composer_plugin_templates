@@ -6,6 +6,7 @@
 
 Plugin for PHP Composer to create locally specific configuration from set of template files and files with configuration parameters.
 
+
 ![screenshot]
 
 ## Installation
@@ -59,17 +60,12 @@ can be under version control) and variables (all or part of them) are unique for
         "local.xml": {
           "src": "test/tmpl/local.xml",
           "dst": "test/mage/app/etc/local.xml",
-          "events": "post-install-cmd",
           "rewrite": true
         },
         "dump.sh": {
           "src": "test/tmpl/dump.sh",
           "dst": "test/bin/dump_db/dump.sh",
-          "rewrite": true,
-          "events": [
-            "post-install-cmd",
-            "post-update-cmd"
-          ]
+          "rewrite": true
         }
       }
     }
@@ -87,14 +83,13 @@ Set of the template's placeholders `${MYSQL_HOST}` and values `localhost` to be 
     }
     
 #### templates
-Set of the templates to be processed on events:
+Set of the templates to be processed on every composer command (install, update, status, ...):
 
     {
       "templates": {
         "local.xml": {
           "src": "test/tmpl/local.xml",
           "dst": "test/mage/app/etc/local.xml",
-          "events": "post-install-cmd",
           "rewrite": true
         },
         "dump.sh": {
@@ -105,11 +100,7 @@ Set of the templates to be processed on events:
             "var": "MYSQL_HOST",
             "operation": "!=",
             "value": "localhost"
-          },
-          "events": [
-            "post-install-cmd",
-            "post-update-cmd"
-          ]
+          }
         }
       }
     }
@@ -123,7 +114,6 @@ Labels (`local.xml` & `dump.sh`) are for reference only.
     * *var*: name of the variable for left part of the condition;
     * *operation*: one of the two operations ('=' or '!=');
     * *value*: string value for compare (right part of the operation);
-* *events*: _(required)_ one event (string) or set of events (array of strings) to fire templates processing on ([available events]);
 
 
 ## License
@@ -131,5 +121,4 @@ Labels (`local.xml` & `dump.sh`) are for reference only.
 All contents of this package are licensed under the [MIT license].
 
 [screenshot]: img/screenshot.png
-[available events]: https://getcomposer.org/doc/articles/scripts.md#event-names
 [MIT license]: LICENSE

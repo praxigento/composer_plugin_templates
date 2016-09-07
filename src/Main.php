@@ -31,10 +31,19 @@ use Composer\EventDispatcher\EventSubscriberInterface;
 use Composer\Installer\PackageEvent;
 use Composer\IO\IOInterface;
 use Composer\Plugin\PluginInterface;
-use Praxigento\Composer\Plugin\Templates\Config;
 
 class Main implements PluginInterface, EventSubscriberInterface
 {
+    /**#@+
+     *
+     * Names of the event handlers (this class' methods).
+     */
+    const HNDL_COMMAND = 'onCommand';
+    const HNDL_INSTALLER = 'onInstaller';
+    const HNDL_PACKAGE = 'onPackage';
+    const HNDL_PLUGIN = 'onPlugin';
+    /**#@- */
+
     /** Entry name for plugin config file in 'extra' section of composer.json */
     const EXTRA_PARAM = 'praxigento_templates_config';
     /** @var Composer */
@@ -45,6 +54,33 @@ class Main implements PluginInterface, EventSubscriberInterface
     private $configFileNames;
     /** @var IOInterface */
     private $io;
+    /**
+     * @var array Map events to handlers.
+     */
+    private $EVENT_HANDLERS = [
+        'pre-install-cmd' => self::HNDL_COMMAND,
+        'post-install-cmd' => self::HNDL_COMMAND,
+        'pre-update-cmd' => self::HNDL_COMMAND,
+        'post-update-cmd' => self::HNDL_COMMAND,
+        'post-status-cmd' => self::HNDL_COMMAND,
+        'pre-archive-cmd' => self::HNDL_COMMAND,
+        'post-archive-cmd' => self::HNDL_COMMAND,
+        'pre-autoload-dump' => self::HNDL_COMMAND,
+        'post-autoload-dump' => self::HNDL_COMMAND,
+        'post-root-package-install' => self::HNDL_COMMAND,
+        'post-create-project-cmd' => self::HNDL_COMMAND,
+        'pre-dependencies-solving' => self::HNDL_INSTALLER,
+        'post-dependencies-solving' => self::HNDL_INSTALLER,
+        'pre-package-install' => self::HNDL_PACKAGE,
+        'post-package-install' => self::HNDL_PACKAGE,
+        'pre-package-update' => self::HNDL_PACKAGE,
+        'post-package-update' => self::HNDL_PACKAGE,
+        'pre-package-uninstall' => self::HNDL_PACKAGE,
+        'post-package-uninstall' => self::HNDL_PACKAGE,
+        'init' => self::HNDL_PLUGIN,
+        'command' => self::HNDL_PLUGIN,
+        'pre-file-download' => self::HNDL_PLUGIN,
+    ];
 
     /**
      * Apply plugin modifications to composer
@@ -149,6 +185,16 @@ class Main implements PluginInterface, EventSubscriberInterface
                 $hndl->process($one);
             }
         }
+    }
+
+    public function onEventPackage(
+        \Composer\Installer\PackageEvent $event
+    ) {
+    }
+
+    public function onEventPlugin(
+        \Composer\Installer\PluginInstaller $event
+    ) {
     }
 
     /**

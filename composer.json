@@ -1,37 +1,25 @@
 {
-  "name": "praxigento/composer_plugin_templates",
-  "description": "Composer plugin to create locally specific configuration from set of template files and from file with configuration parameters.",
+  "name": "praxigento/composer_plugin_templates_test_func",
+  "description": "Development environment for this project.",
+  "type": "project",
   "homepage": "https://github.com/praxigento/composer_plugin_templates",
-  "type": "composer-plugin",
   "license": "MIT",
   "authors": [
     {
       "name": "Alex Gusev",
-      "email": "alex@flancer64.com"
+      "email": "flancer64@gmail.com"
     }
   ],
   "require": {
-    "php": ">=5.3.0",
-    "composer-plugin-api": "^1.0"
+    "php": ">=5.5",
+    "praxigento/composer_plugin_templates": "*"
   },
-  "require-dev": {
-    "composer/composer": "~1.0@dev",
-    "mockery/mockery": "^0.9.4",
-    "phpunit/phpunit": "4.4.*"
-  },
-  "autoload": {
-    "psr-4": {
-      "Praxigento\\Composer\\Plugin\\Templates\\": "src/"
-    }
-  }, "autoload-dev": {
-  "psr-4": {
-    "Praxigento\\Composer\\Plugin\\Templates\\": "test/unit"
-  }
-},
+  "minimum-stability": "dev",
+  "repositories": {},
   "extra": {
-    "class": "Praxigento\\Composer\\Plugin\\Templates\\Main"
-  },
-  "scripts": {
-    "test": "phpunit"
+    "praxigento_templates_config": [
+      "./templates.cfg.json",
+      "./templates.vars.json"
+    ]
   }
 }

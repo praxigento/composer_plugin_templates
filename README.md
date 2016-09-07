@@ -4,8 +4,7 @@
 
 ## What is this?
 
-Plugin for PHP Composer to create locally specific configuration from set of template files and from 
-single file with configuration parameters.
+Plugin for PHP Composer to create locally specific configuration from set of template files and files with configuration parameters.
 
 ![screenshot]
 
@@ -25,7 +24,7 @@ Add to your project's *composer.json*:
 ### Setup configuration file
 
 Create plugin's configuration file ( _./templates.json_, for example) and setup **extra.praxigento_templates_config** 
-parameter inyour project's *composer.json*::
+parameter in your project's *composer.json*::
 
     {
       "extra": {

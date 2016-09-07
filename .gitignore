@@ -3,4 +3,6 @@
 /build/
 /composer.lock
 /test/bin/
+/test/func/vendor/
+/test/func/composer.lock
 /vendor/

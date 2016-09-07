@@ -23,13 +23,13 @@
  *
  * User: Alex Gusev <alex@flancer64.com>
  */
-
 namespace Praxigento\Composer\Plugin\Templates;
 
 
 use Praxigento\Composer\Plugin\Templates\Config\Condition;
 
-class Config {
+class Config
+{
     const CFG_CONDITION = 'condition';
     const CFG_COND_OPER = 'operation';
     const CFG_COND_VALUE = 'value';
@@ -55,24 +55,25 @@ class Config {
      * Templates itself related configuration.
      * @var Config\Template[]
      */
-    private $templates = [ ];
+    private $templates = [];
     /**
      * Template variables related configuration.
      * @var array
      */
-    private $vars = [ ];
+    private $vars = [];
 
-    function __construct($configFilename) {
+    function __construct($configFilename)
+    {
         $string = file_get_contents($configFilename);
         $this->rawData = json_decode($string, true);
         /* vars */
-        if(isset($this->rawData[self::CFG_VARS])) {
+        if (isset($this->rawData[self::CFG_VARS])) {
             $this->vars = $this->rawData[self::CFG_VARS];
         }
         /* templates */
-        if(isset($this->rawData[self::CFG_TMPL])) {
+        if (isset($this->rawData[self::CFG_TMPL])) {
             $tmpls = $this->rawData[self::CFG_TMPL];
-            foreach($tmpls as $one) {
+            foreach ($tmpls as $one) {
                 $this->parseTemplates($one);
             }
         }
@@ -82,7 +83,8 @@ class Config {
      * Return 'true' if configuration has raw data (parsed valid JSON data).
      * @return bool
      */
-    public function hasRawData() {
+    public function hasRawData()
+    {
         $result = ($this->rawData != null);
         return $result;
     }
@@ -90,9 +92,10 @@ class Config {
     /**
      * * @return array of all available events (see \Composer\Script\ScriptEvents)
      */
-    public static function getEventsAvailable() {
-        if(is_null(self::$EVENTS_ALL)) {
-            $refl = new \ReflectionClass('\Composer\Script\ScriptEvents');
+    public static function getEventsAvailable()
+    {
+        if (is_null(self::$EVENTS_ALL)) {
+            $refl = new \ReflectionClass(\Composer\Script\ScriptEvents::class);
             self::$EVENTS_ALL = $refl->getConstants();
         }
         return self::$EVENTS_ALL;
@@ -101,10 +104,11 @@ class Config {
     /**
      * @return array of all events registered to be processed.
      */
-    public function getEventsEnabled() {
-        $result = [ ];
-        foreach($this->templates as $tmpl) {
-            foreach($tmpl->getEvents() as $one) {
+    public function getEventsEnabled()
+    {
+        $result = [];
+        foreach ($this->templates as $tmpl) {
+            foreach ($tmpl->getEvents() as $one) {
                 $result[$one] = $one;
             }
         }
@@ -114,7 +118,8 @@ class Config {
     /**
      * @return array
      */
-    public function getTemplates() {
+    public function getTemplates()
+    {
         return $this->templates;
     }
 
@@ -125,11 +130,12 @@ class Config {
      *
      * @return Config\Template[]
      */
-    public function getTemplatesForEvent($name) {
-        $result = [ ];
-        foreach($this->templates as $tmpl) {
-            foreach($tmpl->getEvents() as $event) {
-                if($event == $name) {
+    public function getTemplatesForEvent($name)
+    {
+        $result = [];
+        foreach ($this->templates as $tmpl) {
+            foreach ($tmpl->getEvents() as $event) {
+                if ($event == $name) {
                     $result[] = $tmpl;
                     break;
                 }
@@ -141,7 +147,8 @@ class Config {
     /**
      * @return array
      */
-    public function getVars() {
+    public function getVars()
+    {
         return $this->vars;
     }
 
@@ -150,21 +157,23 @@ class Config {
      *
      * @param Config $other
      */
-    public function merge(Config $other) {
+    public function merge(Config $other)
+    {
         /* merge variables */
-        foreach($other->getVars() as $key => $value) {
+        foreach ($other->getVars() as $key => $value) {
             $this->vars[$key] = $value;
         }
         /* merge templates */
-        foreach($other->getTemplates() as $one) {
+        foreach ($other->getTemplates() as $one) {
             $this->templates[] = $one;
         }
     }
 
-    private function isEvent($name) {
+    private function isEvent($name)
+    {
         $result = false;
-        foreach(self::getEventsAvailable() as $one) {
-            if($one == $name) {
+        foreach (self::getEventsAvailable() as $one) {
+            if ($one == $name) {
                 $result = true;
                 break;
             }
@@ -172,18 +181,19 @@ class Config {
         return $result;
     }
 
-    private function parseTemplateEvents($unparsed) {
-        $result = [ ];
-        if(is_string($unparsed)) {
+    private function parseTemplateEvents($unparsed)
+    {
+        $result = [];
+        if (is_string($unparsed)) {
             $name = strtolower(trim($unparsed));
-            if($this->isEvent($name)) {
+            if ($this->isEvent($name)) {
                 $result[] = $name;
             }
         } else {
-            if(is_array($unparsed)) {
-                foreach($unparsed as $one) {
+            if (is_array($unparsed)) {
+                foreach ($unparsed as $one) {
                     $name = strtolower(trim($one));
-                    if($this->isEvent($name)) {
+                    if ($this->isEvent($name)) {
                         $result[] = $name;
                     }
                 }
@@ -192,12 +202,13 @@ class Config {
         return $result;
     }
 
-    private function parseTemplateCondition($rowData) {
+    private function parseTemplateCondition($rowData)
+    {
         $result = new Condition();
-        if(is_array($rowData)) {
-            foreach($rowData as $key => $one) {
+        if (is_array($rowData)) {
+            foreach ($rowData as $key => $one) {
                 $name = strtolower(trim($key));
-                switch($name) {
+                switch ($name) {
                     case self::CFG_COND_OPER:
                         $result->setOperation($one);
                         break;
@@ -213,8 +224,9 @@ class Config {
         return $result;
     }
 
-    private function parseTemplates($unparsed) {
-        if(
+    private function parseTemplates($unparsed)
+    {
+        if (
             isset($unparsed[self::CFG_SRC]) &&
             isset($unparsed[self::CFG_DST]) &&
             isset($unparsed[self::CFG_EVENTS])
@@ -223,16 +235,16 @@ class Config {
             $tmpl->setSource($unparsed[self::CFG_SRC]);
             $tmpl->setDestination($unparsed[self::CFG_DST]);
             /* parse 'rewrite' item */
-            if(isset($unparsed[self::CFG_REWRITE])) {
+            if (isset($unparsed[self::CFG_REWRITE])) {
                 $tmpl->setCanRewrite($unparsed[self::CFG_REWRITE]);
             }
             /* parse 'condition' item */
-            if(isset($unparsed[self::CFG_CONDITION])) {
+            if (isset($unparsed[self::CFG_CONDITION])) {
                 $condition = $this->parseTemplateCondition($unparsed[self::CFG_CONDITION]);
                 $tmpl->setCondition($condition);
             }
             /* exclude missed events or parse events data */
-            if(
+            if (
                 (
                     is_string($unparsed[self::CFG_EVENTS]) &&
                     (strlen($unparsed[self::CFG_EVENTS]) == 0)

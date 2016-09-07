@@ -135,13 +135,13 @@ class Main
                     } else {
                         $io->writeError(__CLASS__ . ": <error>Cannot read valid JSON from configuration file '$one'. Plugin will be disabled.</error>",
                             true);
-                        $this->config = null;
+                        self::$config = null;
                         break;
                     }
                 } else {
                     $io->writeError(__CLASS__ . ": <error>Cannot open configuration file '$one'. Plugin will be disabled.</error>",
                         true);
-                    $this->config = null;
+                    self::$config = null;
                     break;
                 }
             }

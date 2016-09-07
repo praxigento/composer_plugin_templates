@@ -24,8 +24,6 @@
 
 namespace Praxigento\Composer\Plugin\Templates;
 
-use Composer\Script\ScriptEvents;
-
 require_once(__DIR__ . '/../../phpunit.bootstrap.php');
 
 class Main_Test extends \PHPUnit_Framework_TestCase
@@ -133,42 +131,6 @@ class Main_Test extends \PHPUnit_Framework_TestCase
         /** === Call and asserts  === */
         $this->obj->activate($this->mComposer, $this->mIo);
         $this->assertNull($this->obj->getConfigFileNames());
-    }
-
-    public function test_getSubscribedEvents()
-    {
-        /** === Call and asserts  === */
-        $events = Main::getSubscribedEvents();
-        $refl = new \ReflectionClass(\Composer\Script\ScriptEvents::class);
-        foreach ($refl->getConstants() as $one) {
-            $this->assertArrayHasKey(ScriptEvents::POST_INSTALL_CMD, $events);
-        }
-    }
-
-    public function test_onEvent()
-    {
-        /** === Test Data === */
-        $eventName = ScriptEvents::POST_INSTALL_CMD;
-        $template = new Config\Template();
-        $template->setSource(self::FILE_TMPL_SRC);
-        $template->setDestination(self::FILE_TMPL_DST);
-        $events = [$eventName];
-        $template->setEvents($events);
-        /** === Setup Mocks === */
-        $mConfig = \Mockery::mock(
-            \Praxigento\Composer\Plugin\Templates\Config::class,
-            [PRJ_ROOT . '/' . self::FILE_CONFIG_JSON_NVC]
-        );
-        $mConfig->shouldReceive('getTemplatesForEvent')->with($eventName)->andReturn([$template]);
-        $mConfig->shouldReceive('getVars')->andReturn([]);
-        $mEvent = \Mockery::mock(\Composer\Installer\PackageEvent::class);
-        $mEvent->shouldReceive('getName')->andReturn($eventName);
-        $this->mIo
-            ->shouldReceive('writeError');
-        /** === Call and asserts  === */
-        $this->obj->setConfig($mConfig);
-        $this->obj->setIo($this->mIo);
-        $this->obj->onEvent($mEvent);
     }
 
 }

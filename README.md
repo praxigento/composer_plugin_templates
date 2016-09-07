@@ -4,8 +4,9 @@
 
 ## What is this?
 
-Plugin for PHP Composer to create locally specific configuration from set of template files and files with configuration parameters.
-
+Plugin for PHP Composer to create locally specific configuration from set of template files and files with 
+configuration parameters. Templates processing is occurred before any composer command (excluding 'install' cause 
+plugin is not installed before command have been executed).
 
 ![screenshot]
 
